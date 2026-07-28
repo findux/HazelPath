@@ -82,7 +82,7 @@
 			<PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 			<WarningLevel>Level3</WarningLevel>
-			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src</AdditionalIncludeDirectories>
+			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src;..\..\..\addons\ofxLua\libs\lua\src;..\..\..\addons\ofxLua\src;..\..\..\addons\ofxSol2\libs\sol2\include;..\..\..\addons\ofxSol2\src</AdditionalIncludeDirectories>
 			<CompileAs>CompileAsCpp</CompileAs>
 			<MultiProcessorCompilation>true</MultiProcessorCompilation>
 			<LanguageStandard>stdcpp23</LanguageStandard>
@@ -126,7 +126,7 @@
 			<PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 			<WarningLevel>Level3</WarningLevel>
-			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src</AdditionalIncludeDirectories>
+			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src;..\..\..\addons\ofxLua\libs\lua\src;..\..\..\addons\ofxLua\src;..\..\..\addons\ofxSol2\libs\sol2\include;..\..\..\addons\ofxSol2\src</AdditionalIncludeDirectories>
 			<CompileAs>CompileAsCpp</CompileAs>
 			<LanguageStandard>stdcpplatest</LanguageStandard>
 			<AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions) -std=c++11 -DofxAddons_ENABLE_IMGUI</AdditionalOptions>
@@ -253,6 +253,40 @@
 		<ClCompile Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImGradient.cpp" />
 		<ClCompile Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImGuizmo.cpp" />
 		<ClCompile Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImSequencer.cpp" />
+		<ClCompile Include="..\..\..\addons\ofxLua\src\ofxLua.cpp" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lapi.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lauxlib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lbaselib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lcode.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lcorolib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lctype.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldblib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldebug.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldo.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldump.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lfunc.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lgc.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\linit.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\liolib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\llex.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lmathlib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lmem.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\loadlib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lobject.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lopcodes.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\loslib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lparser.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lstate.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lstring.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lstrlib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ltable.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ltablib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ltm.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lundump.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lutf8lib.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lvm.c" />
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lzio.c" />
+		<ClCompile Include="..\..\..\addons\ofxSol2\src\ofxSol2.cpp" />
 	</ItemGroup>
 	<ItemGroup>
 		<ClInclude Include="src\ofApp.h" />
@@ -297,6 +331,39 @@
 		<ClInclude Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImGuizmo.h" />
 		<ClInclude Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImSequencer.h" />
 		<ClInclude Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImZoomSlider.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\src\ofxLua.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lapi.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lauxlib.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lcode.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lctype.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ldebug.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ldo.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lfunc.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lgc.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ljumptab.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\llex.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\llimits.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lmem.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lobject.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lopcodes.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lopnames.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lparser.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lprefix.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lstate.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lstring.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ltable.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ltm.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lua.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lua.hpp" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\luaconf.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lualib.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lundump.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lvm.h" />
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lzio.h" />
+		<ClInclude Include="..\..\..\addons\ofxSol2\src\ofxSol2.h" />
+		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\config.hpp" />
+		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\forward.hpp" />
+		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\sol.hpp" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

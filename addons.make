@@ -2,3 +2,5 @@ ofxGpr
 ofxImGui
 ofxImGuiTextEditor
 ofxImGuizmo
+ofxLua
+ofxSol2

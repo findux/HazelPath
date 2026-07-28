@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxImGui.h"
 #include "ofxImGuiTextEditor.h"
+#include "ofxSol2.h"
 
 class ofApp : public ofBaseApp{
 
@@ -30,6 +31,7 @@ class ofApp : public ofBaseApp{
 
 		ofxImGui::Gui gui;
 		ofxImGuiTextEditor textEditor;
+		ofxSol2 scripting;
 		ofEasyCam camera;
 		ofFbo sceneFbo;
 

@@ -88,64 +88,199 @@
 		<ClCompile Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImSequencer.cpp">
 			<Filter>addons\ofxImGuizmo\libs\ImGuizmo</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\src\ofxLua.cpp">
+			<Filter>addons\ofxLua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lapi.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lauxlib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lbaselib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lcode.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lcorolib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lctype.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldblib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldebug.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldo.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ldump.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lfunc.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lgc.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\linit.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\liolib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\llex.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lmathlib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lmem.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\loadlib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lobject.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lopcodes.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\loslib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lparser.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lstate.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lstring.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lstrlib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ltable.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ltablib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\ltm.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lundump.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lutf8lib.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lvm.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxLua\libs\lua\src\lzio.c">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxSol2\src\ofxSol2.cpp">
+			<Filter>addons\ofxSol2\src</Filter>
+		</ClCompile>
 	</ItemGroup>
 	<ItemGroup>
 		<Filter Include="src">
 			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons">
-			<UniqueIdentifier>{D7E064C0--153-F-43-01-A-B11-33415E862F0A}</UniqueIdentifier>
+			<UniqueIdentifier>{D654C484--407-2-4B-E8-9-257-6FC414894946}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGpr">
-			<UniqueIdentifier>{44547411--156-0-41-95-A-E7E-3E23E8EC1F80}</UniqueIdentifier>
+			<UniqueIdentifier>{99A4214D--7A3-F-4F-41-8-C0E-25A6F13E2E5D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGpr\src">
-			<UniqueIdentifier>{B0251EFA--295-A-4A-BD-8-53E-7D7934256EAA}</UniqueIdentifier>
+			<UniqueIdentifier>{0898B838--5E5-E-4E-BC-8-CB1-16B2999D4046}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui">
-			<UniqueIdentifier>{94172667--617-D-48-C9-A-A49-38F9BEB77CDD}</UniqueIdentifier>
+			<UniqueIdentifier>{46341AB9--D49-6-41-A9-A-D05-2008C3DF02D6}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\src">
-			<UniqueIdentifier>{5BF21180--300-6-4B-81-A-042-077000E5FE94}</UniqueIdentifier>
+			<UniqueIdentifier>{22FE5389--770-C-4B-D8-8-470-DC29766B8FFD}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs">
-			<UniqueIdentifier>{1FBF0223--A1C-3-40-A1-A-B18-3FD9A123F354}</UniqueIdentifier>
+			<UniqueIdentifier>{E2B7D384--B45-9-48-68-9-F3F-FE3467A62FFA}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui">
-			<UniqueIdentifier>{6E08CC73--78A-0-47-63-B-A09-3A38E580CF4F}</UniqueIdentifier>
+			<UniqueIdentifier>{39CCEDC8--EA7-2-4A-4E-9-1E9-11377985F790}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui\backends">
-			<UniqueIdentifier>{B585ECE6--481-4-43-8F-A-4AA-712225A631FB}</UniqueIdentifier>
+			<UniqueIdentifier>{5FF81E33--7E5-1-48-58-A-F9D-49274EA3FF77}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui\extras">
-			<UniqueIdentifier>{01858D7F--38E-6-43-51-8-3F2-DFC325E61731}</UniqueIdentifier>
+			<UniqueIdentifier>{D378553A--A6B-4-4B-7E-8-892-1FD04C5BB02F}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui\src">
-			<UniqueIdentifier>{66815E22--7E7-7-4C-33-9-447-373D3831D5A9}</UniqueIdentifier>
+			<UniqueIdentifier>{3541527D--462-3-46-5F-9-0CE-495269C95C1F}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor">
-			<UniqueIdentifier>{EE8C9D75--778-1-46-AB-A-81D-057190ECBEFA}</UniqueIdentifier>
+			<UniqueIdentifier>{8CB164DA--18E-5-42-F0-9-815-535B1EFD5FE9}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor\src">
-			<UniqueIdentifier>{04B7582F--EE0-6-42-3D-B-FAB-28C90F26B948}</UniqueIdentifier>
+			<UniqueIdentifier>{E1BA7C19--EAA-4-4A-3A-8-EEE-D0C4D927334E}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor\libs">
-			<UniqueIdentifier>{A157F10F--6AF-7-49-60-9-143-40D8657B3788}</UniqueIdentifier>
+			<UniqueIdentifier>{0AAF389F--503-6-4A-0F-8-5ED-F726DE2DC05A}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit">
-			<UniqueIdentifier>{2EE23886--CAB-1-40-96-B-C6F-884F5B1BA541}</UniqueIdentifier>
+			<UniqueIdentifier>{DC30D0C0--FBD-3-4F-DB-A-105-E514435757EA}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo">
-			<UniqueIdentifier>{2441F54D--927-B-4A-82-B-4F0-1618DD8D5858}</UniqueIdentifier>
+			<UniqueIdentifier>{981E3CE1--D7F-F-4D-4B-8-BC5-7EF1057717ED}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo\src">
-			<UniqueIdentifier>{B911B8E7--466-C-43-48-8-ADE-865B1FD0E071}</UniqueIdentifier>
+			<UniqueIdentifier>{C96F3B37--B6A-8-4D-1E-B-B94-5CC66D87F769}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo\libs">
-			<UniqueIdentifier>{B1FC1A5B--D72-B-43-85-9-462-5B33A571A1FA}</UniqueIdentifier>
+			<UniqueIdentifier>{555DBE2B--B4C-7-48-67-B-08D-B86EA6529AEA}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo\libs\ImGuizmo">
-			<UniqueIdentifier>{0CB6E0F1--633-E-42-E5-A-580-DD54985A27DE}</UniqueIdentifier>
+			<UniqueIdentifier>{4B5D959A--BFD-F-40-90-8-DDE-52473F1F4F01}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxLua">
+			<UniqueIdentifier>{169C6E31--892-8-40-4A-A-845-C16821D447AD}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxLua\src">
+			<UniqueIdentifier>{8341B38C--3FF-8-44-BB-8-46F-351638CF4FE3}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxLua\libs">
+			<UniqueIdentifier>{D9C18496--7CC-6-4F-47-9-C65-681B6902B1F5}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxLua\libs\lua">
+			<UniqueIdentifier>{A26E99BE--018-6-40-04-B-FB2-4A743F82837A}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxLua\libs\lua\src">
+			<UniqueIdentifier>{FEC7ED22--78E-A-48-19-9-723-F141C1910D4D}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxSol2">
+			<UniqueIdentifier>{D1229561--24A-0-4A-DE-8-4F9-4477B9CDE810}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxSol2\src">
+			<UniqueIdentifier>{E21D6503--44D-4-4F-91-B-FD2-FC6FB912099A}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxSol2\libs">
+			<UniqueIdentifier>{25A94E99--E1B-1-4A-14-9-905-03FC88652E35}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxSol2\libs\sol2">
+			<UniqueIdentifier>{F89D73FB--063-7-44-B8-B-519-08C48BF2F93A}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxSol2\libs\sol2\include">
+			<UniqueIdentifier>{FD0DFE70--1E7-6-4E-85-A-D88-E5D32C7D86AA}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxSol2\libs\sol2\include\sol">
+			<UniqueIdentifier>{F5C0147E--27A-8-48-7E-9-CB8-42AA11787ED2}</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -274,6 +409,105 @@
 		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\ImZoomSlider.h">
 			<Filter>addons\ofxImGuizmo\libs\ImGuizmo</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\src\ofxLua.h">
+			<Filter>addons\ofxLua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lapi.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lauxlib.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lcode.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lctype.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ldebug.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ldo.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lfunc.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lgc.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ljumptab.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\llex.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\llimits.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lmem.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lobject.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lopcodes.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lopnames.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lparser.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lprefix.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lstate.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lstring.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ltable.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\ltm.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lua.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lua.hpp">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\luaconf.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lualib.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lundump.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lvm.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxLua\libs\lua\src\lzio.h">
+			<Filter>addons\ofxLua\libs\lua\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxSol2\src\ofxSol2.h">
+			<Filter>addons\ofxSol2\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\config.hpp">
+			<Filter>addons\ofxSol2\libs\sol2\include\sol</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\forward.hpp">
+			<Filter>addons\ofxSol2\libs\sol2\include\sol</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\sol.hpp">
+			<Filter>addons\ofxSol2\libs\sol2\include\sol</Filter>
 		</ClInclude>
 	</ItemGroup>
 	<ItemGroup>

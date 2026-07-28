@@ -7,6 +7,14 @@ void ofApp::setup(){
 
 	gui.setup();
 
+	scripting.setup();
+	if (scripting.runString("ofx_lua_test_result = 6 * 7")) {
+		const int testResult = scripting.state()["ofx_lua_test_result"].get<int>();
+		statusMessage = "Lua 5.4 + sol2 hazir (test: " + ofToString(testResult) + ")";
+	} else {
+		statusMessage = "Lua hatasi: " + scripting.getLastError();
+	}
+
 	ofxImGuiTextEditorSettings editorSettings;
 	editorSettings.languageDefinition = TextEditor::LanguageDefinition::GCode();
 	textEditor.setup(editorSettings);
@@ -17,6 +25,7 @@ void ofApp::setup(){
 	//camera.setTarget(glm::vec3(0.0f));
 	//camera.setUpAxis(glm::vec3(0.0f, 0.0f, 1.0f));
 	camera.enableMouseInput();
+	resetCamera();
 }
 
 //--------------------------------------------------------------
