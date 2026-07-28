@@ -1,0 +1,24 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Build output
+obj/
+bin/*.exe
+bin/*.dll
+bin/*.lib
+bin/*.exp
+bin/*.pdb
+bin/*.ilk
+
+# openFrameworks generated files
+*.log
+*.tlog
+*.recipe
+
+# OS files
+.DS_Store
+Thumbs.db
