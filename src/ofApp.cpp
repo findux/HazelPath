@@ -7,23 +7,34 @@ void ofApp::setup(){
 
 	gui.setup();
 
+	const std::string initialNc =
+		"; NC programi\n"
+		"G21\n"
+		"G90\n"
+		"G0 X0 Y0 Z10\n"
+		"G1 X50 Y20 Z-2 F800\n";
+
 	scripting.setup();
-	scripting.state()["cpp_feed_rate"] = 800.0;
+	nc::lua::registerAllBindings(scripting.state());
 	scripting.state().set_function("of_log", [](const std::string& message) {
 		ofLogNotice("Lua") << message;
 	});
 
-	if (scripting.runFile("example.lua")) {
-		const double result = scripting.state()["lua_result"].get<double>();
-		statusMessage = "example.lua calisti (sonuc: " + ofToString(result) + ")";
+	const nc::NcImportResult importResult = nc::importNcWithMachineScript(
+		scripting.state(), "machines/generic_3axis.lua", initialNc);
+	if (importResult.success) {
+		currentToolpath = importResult.toolpath;
+		statusMessage = "NC donusturuldu: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
+		ofLogNotice("NC Import") << statusMessage;
 	} else {
-		statusMessage = "Lua hatasi: " + scripting.getLastError();
+		statusMessage = importResult.error;
+		ofLogError("NC Import") << importResult.error;
 	}
 
 	ofxImGuiTextEditorSettings editorSettings;
 	editorSettings.languageDefinition = TextEditor::LanguageDefinition::GCode();
 	textEditor.setup(editorSettings);
-	textEditor.set("; NC programi\nG21\nG90\nG0 X0 Y0 Z10\n");
+	textEditor.set(initialNc);
 
 	
 	//camera.setPosition(glm::vec3(100.0f, -100.0f, 50.0f));

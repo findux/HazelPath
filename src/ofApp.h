@@ -4,6 +4,8 @@
 #include "ofxImGui.h"
 #include "ofxImGuiTextEditor.h"
 #include "ofxSol2.h"
+#include "scripting/LuaBindings.h"
+#include "scripting/NcImporter.h"
 
 class ofApp : public ofBaseApp{
 
@@ -32,6 +34,7 @@ class ofApp : public ofBaseApp{
 		ofxImGui::Gui gui;
 		ofxImGuiTextEditor textEditor;
 		ofxSol2 scripting;
+		nc::Toolpath currentToolpath;
 		ofEasyCam camera;
 		ofFbo sceneFbo;
 
