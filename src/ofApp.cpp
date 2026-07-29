@@ -8,9 +8,14 @@ void ofApp::setup(){
 	gui.setup();
 
 	scripting.setup();
-	if (scripting.runString("ofx_lua_test_result = 6 * 7")) {
-		const int testResult = scripting.state()["ofx_lua_test_result"].get<int>();
-		statusMessage = "Lua 5.4 + sol2 hazir (test: " + ofToString(testResult) + ")";
+	scripting.state()["cpp_feed_rate"] = 800.0;
+	scripting.state().set_function("of_log", [](const std::string& message) {
+		ofLogNotice("Lua") << message;
+	});
+
+	if (scripting.runFile("example.lua")) {
+		const double result = scripting.state()["lua_result"].get<double>();
+		statusMessage = "example.lua calisti (sonuc: " + ofToString(result) + ")";
 	} else {
 		statusMessage = "Lua hatasi: " + scripting.getLastError();
 	}
