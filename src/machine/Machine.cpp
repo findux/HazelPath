@@ -11,8 +11,9 @@ void MachineLink::setName(const std::string& value) { name = value; }
 const std::string& MachineLink::getName() const { return name; }
 
 void MachineLink::customDraw(const ofBaseRenderer* renderer) const {
-	// TODO: Draw the visual belonging to this URDF link.
-	(void)renderer;
+	// Temporary marker; URDF visual geometry will replace it later.
+	renderer->drawAxis(15.0f);
+	renderer->drawBox(8.0f);
 }
 
 Machine::Machine(std::string idValue, std::string nameValue)

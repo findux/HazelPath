@@ -19,6 +19,12 @@
 		<ClCompile Include="src\scripting\NcImporter.cpp">
 			<Filter>src\scripting</Filter>
 		</ClCompile>
+		<ClCompile Include="src\simulation\MotionInterpolator.cpp">
+			<Filter>src\simulation</Filter>
+		</ClCompile>
+		<ClCompile Include="src\simulation\SimulationController.cpp">
+			<Filter>src\simulation</Filter>
+		</ClCompile>
 		<ClCompile Include="src\toolpath\Toolpath.cpp">
 			<Filter>src\toolpath</Filter>
 		</ClCompile>
@@ -216,6 +222,9 @@
 		<Filter Include="src\scripting">
 			<UniqueIdentifier>{63607BA5-44FF-420A-8AAF-5F47B0974676}</UniqueIdentifier>
 		</Filter>
+		<Filter Include="src\simulation">
+			<UniqueIdentifier>{A7D306AE-A738-4169-8C1D-E05DC67A2B72}</UniqueIdentifier>
+		</Filter>
 		<Filter Include="src\toolpath">
 			<UniqueIdentifier>{0EC5136E-0EC1-443B-8B50-CAE273B657CD8}</UniqueIdentifier>
 		</Filter>
@@ -319,6 +328,12 @@
 		</ClInclude>
 		<ClInclude Include="src\scripting\NcImporter.h">
 			<Filter>src\scripting</Filter>
+		</ClInclude>
+		<ClInclude Include="src\simulation\MotionInterpolator.h">
+			<Filter>src\simulation</Filter>
+		</ClInclude>
+		<ClInclude Include="src\simulation\SimulationController.h">
+			<Filter>src\simulation</Filter>
 		</ClInclude>
 		<ClInclude Include="src\toolpath\Toolpath.h">
 			<Filter>src\toolpath</Filter>

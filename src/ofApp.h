@@ -6,6 +6,7 @@
 #include "ofxSol2.h"
 #include "scripting/LuaBindings.h"
 #include "scripting/NcImporter.h"
+#include "simulation/SimulationController.h"
 #include "machine/Machine.h"
 
 class ofApp : public ofBaseApp{
@@ -37,6 +38,7 @@ class ofApp : public ofBaseApp{
 		ofxSol2 scripting;
 		nc::Toolpath currentToolpath;
 		nc::Machine currentMachine{"generic_3axis", "Generic 3-Axis Mill"};
+		nc::SimulationController simulation;
 		ofEasyCam camera;
 		ofFbo sceneFbo;
 

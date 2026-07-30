@@ -82,7 +82,7 @@
 			<PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 			<WarningLevel>Level3</WarningLevel>
-			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;src\machine;src\scripting;src\toolpath;..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src;..\..\..\addons\ofxLua\libs\lua\src;..\..\..\addons\ofxLua\src;..\..\..\addons\ofxSol2\libs\sol2\include;..\..\..\addons\ofxSol2\src</AdditionalIncludeDirectories>
+			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;src\machine;src\scripting;src\simulation;src\toolpath;..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src;..\..\..\addons\ofxLua\libs\lua\src;..\..\..\addons\ofxLua\src;..\..\..\addons\ofxSol2\libs\sol2\include;..\..\..\addons\ofxSol2\src</AdditionalIncludeDirectories>
 			<CompileAs>CompileAsCpp</CompileAs>
 			<MultiProcessorCompilation>true</MultiProcessorCompilation>
 			<LanguageStandard>stdcpp23</LanguageStandard>
@@ -126,7 +126,7 @@
 			<PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 			<WarningLevel>Level3</WarningLevel>
-			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;src\machine;src\scripting;src\toolpath;..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src;..\..\..\addons\ofxLua\libs\lua\src;..\..\..\addons\ofxLua\src;..\..\..\addons\ofxSol2\libs\sol2\include;..\..\..\addons\ofxSol2\src</AdditionalIncludeDirectories>
+			<AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;src\machine;src\scripting;src\simulation;src\toolpath;..\..\..\addons\ofxGpr\src;..\..\..\addons\ofxImGui\libs;..\..\..\addons\ofxImGui\libs\imgui;..\..\..\addons\ofxImGui\libs\imgui\backends;..\..\..\addons\ofxImGui\libs\imgui\docs;..\..\..\addons\ofxImGui\libs\imgui\extras;..\..\..\addons\ofxImGui\libs\imgui\src;..\..\..\addons\ofxImGui\src;..\..\..\addons\ofxImGuiTextEditor\libs;..\..\..\addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit;..\..\..\addons\ofxImGuiTextEditor\src;..\..\..\addons\ofxImGuizmo\libs;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\Images;..\..\..\addons\ofxImGuizmo\libs\ImGuizmo\vcpkg-example;..\..\..\addons\ofxImGuizmo\src;..\..\..\addons\ofxLua\libs\lua\src;..\..\..\addons\ofxLua\src;..\..\..\addons\ofxSol2\libs\sol2\include;..\..\..\addons\ofxSol2\src</AdditionalIncludeDirectories>
 			<CompileAs>CompileAsCpp</CompileAs>
 			<LanguageStandard>stdcpplatest</LanguageStandard>
 			<AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions) -std=c++11 -DofxAddons_ENABLE_IMGUI</AdditionalOptions>
@@ -230,6 +230,8 @@
 		<ClCompile Include="src\scripting\LuaBindings.cpp" />
 		<ClCompile Include="src\scripting\MachineBindings.cpp" />
 		<ClCompile Include="src\scripting\NcImporter.cpp" />
+		<ClCompile Include="src\simulation\MotionInterpolator.cpp" />
+		<ClCompile Include="src\simulation\SimulationController.cpp" />
 		<ClCompile Include="src\toolpath\Toolpath.cpp" />
 		<ClCompile Include="..\..\..\addons\ofxGpr\src\gcode_program.cpp" />
 		<ClCompile Include="..\..\..\addons\ofxGpr\src\parser.cpp" />
@@ -298,6 +300,8 @@
 		<ClInclude Include="src\machine\Machine.h" />
 		<ClInclude Include="src\scripting\LuaBindings.h" />
 		<ClInclude Include="src\scripting\NcImporter.h" />
+		<ClInclude Include="src\simulation\MotionInterpolator.h" />
+		<ClInclude Include="src\simulation\SimulationController.h" />
 		<ClInclude Include="src\toolpath\Toolpath.h" />
 		<ClInclude Include="..\..\..\addons\ofxGpr\src\gcode_program.h" />
 		<ClInclude Include="..\..\..\addons\ofxGpr\src\ofxGpr.h" />

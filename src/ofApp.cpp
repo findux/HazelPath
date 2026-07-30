@@ -20,6 +20,9 @@ void ofApp::setup(){
 	nc::MachineScriptFiles machineScripts;
 	machineScripts.directory = "machines/generic_3axis";
 	currentMachine.setScriptFiles(machineScripts);
+	currentMachine.addLink("x_axis");
+	currentMachine.addLink("y_axis", "x_axis");
+	currentMachine.addLink("z_axis", "y_axis");
 	scripting.state().set_function("of_log", [](const std::string& message) {
 		ofLogNotice("Lua") << message;
 	});
@@ -28,6 +31,8 @@ void ofApp::setup(){
 		scripting.state(), currentMachine.getImportScriptPath(), initialNc);
 	if (importResult.success) {
 		currentToolpath = importResult.toolpath;
+		simulation.setToolpath(&currentToolpath);
+		simulation.play();
 		statusMessage = "NC donusturuldu: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
 		ofLogNotice("NC Import") << statusMessage;
 	} else {
@@ -64,7 +69,19 @@ void ofApp::resetCamera(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	simulation.update(ofGetLastFrameTime());
 
+	const nc::AxisPosition& position = simulation.getPosition();
+	const float unitScale = currentToolpath.units == nc::Units::Inches ? 25.4f : 1.0f;
+	if (nc::MachineLink* xAxis = currentMachine.findLink("x_axis")) {
+		xAxis->setPosition(static_cast<float>(position.x) * unitScale, 0.0f, 0.0f);
+	}
+	if (nc::MachineLink* yAxis = currentMachine.findLink("y_axis")) {
+		yAxis->setPosition(0.0f, static_cast<float>(position.y) * unitScale, 0.0f);
+	}
+	if (nc::MachineLink* zAxis = currentMachine.findLink("z_axis")) {
+		zAxis->setPosition(0.0f, 0.0f, static_cast<float>(position.z) * unitScale);
+	}
 }
 
 //--------------------------------------------------------------
@@ -95,6 +112,7 @@ void ofApp::drawScene(int width, int height){
 	ofDrawAxis(150.0f);
 	ofSetColor(255, 140, 40);
 	ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
+	currentMachine.drawLinks();
 	camera.end();
 
 	ofDisableDepthTest();
@@ -138,6 +156,18 @@ void ofApp::drawInterface(){
 		}
 		if (ImGui::BeginMenu("Duzen")) {
 			ImGui::MenuItem("G-code metin editoru", nullptr, false, false);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Simulasyon")) {
+			if (ImGui::MenuItem("Oynat")) {
+				simulation.play();
+			}
+			if (ImGui::MenuItem("Duraklat")) {
+				simulation.pause();
+			}
+			if (ImGui::MenuItem("Durdur")) {
+				simulation.stop();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Gorunum")) {
@@ -195,8 +225,15 @@ void ofApp::drawInterface(){
 	ImGui::EndChild();
 
 	ImGui::Separator();
-	ImGui::Text("%s | FPS: %.1f | Editor: %.0f%% | Sahne: %.0f%%",
-		statusMessage.c_str(), ofGetFrameRate(), splitRatio * 100.0f, (1.0f - splitRatio) * 100.0f);
+	const nc::AxisPosition& simulatedPosition = simulation.getPosition();
+	const char* simulationText = "Durdu";
+	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = "Oynuyor";
+	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatildi";
+	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandi";
+	ImGui::Text("%s | Sim: %s %.0f%% | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
+		statusMessage.c_str(), simulationText, simulation.getProgress() * 100.0,
+		simulation.getSourceLine(), simulatedPosition.x, simulatedPosition.y,
+		simulatedPosition.z, ofGetFrameRate());
 
 	ImGui::End();
 }
@@ -234,4 +271,3 @@ void ofApp::mouseExited(int x, int y){}
 void ofApp::windowResized(int w, int h){}
 void ofApp::gotMessage(ofMessage msg){}
 void ofApp::dragEvent(ofDragInfo dragInfo){}
-
