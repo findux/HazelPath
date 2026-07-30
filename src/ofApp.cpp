@@ -1,4 +1,4 @@
-#include "ofApp.h"
+﻿#include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -16,12 +16,16 @@ void ofApp::setup(){
 
 	scripting.setup();
 	nc::lua::registerAllBindings(scripting.state());
+
+	nc::MachineScriptFiles machineScripts;
+	machineScripts.directory = "machines/generic_3axis";
+	currentMachine.setScriptFiles(machineScripts);
 	scripting.state().set_function("of_log", [](const std::string& message) {
 		ofLogNotice("Lua") << message;
 	});
 
 	const nc::NcImportResult importResult = nc::importNcWithMachineScript(
-		scripting.state(), "machines/generic_3axis.lua", initialNc);
+		scripting.state(), currentMachine.getImportScriptPath(), initialNc);
 	if (importResult.success) {
 		currentToolpath = importResult.toolpath;
 		statusMessage = "NC donusturuldu: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
@@ -230,3 +234,4 @@ void ofApp::mouseExited(int x, int y){}
 void ofApp::windowResized(int w, int h){}
 void ofApp::gotMessage(ofMessage msg){}
 void ofApp::dragEvent(ofDragInfo dragInfo){}
+

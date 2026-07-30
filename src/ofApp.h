@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ofMain.h"
 #include "ofxImGui.h"
@@ -6,6 +6,7 @@
 #include "ofxSol2.h"
 #include "scripting/LuaBindings.h"
 #include "scripting/NcImporter.h"
+#include "machine/Machine.h"
 
 class ofApp : public ofBaseApp{
 
@@ -35,6 +36,7 @@ class ofApp : public ofBaseApp{
 		ofxImGuiTextEditor textEditor;
 		ofxSol2 scripting;
 		nc::Toolpath currentToolpath;
+		nc::Machine currentMachine{"generic_3axis", "Generic 3-Axis Mill"};
 		ofEasyCam camera;
 		ofFbo sceneFbo;
 

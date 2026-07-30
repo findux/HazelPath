@@ -1,4 +1,4 @@
-#include "LuaBindings.h"
+﻿#include "LuaBindings.h"
 
 #include "ofxGpr.h"
 #include "toolpath/Toolpath.h"
@@ -161,6 +161,7 @@ void registerGprBindings(sol::state& state) {
 void registerAllBindings(sol::state& state) {
 	registerToolpathBindings(state);
 	registerGprBindings(state);
+	registerMachineBindings(state);
 }
 
 } // namespace nc::lua

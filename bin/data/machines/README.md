@@ -29,3 +29,15 @@ Available toolpath types:
 - source line/text and string metadata fields
 
 Arrays from GPR use zero-based indexes. A converter must keep controller modal state itself (units, absolute/incremental mode, active plane, active motion, feed, spindle and tool state).
+## Per-machine layout
+
+Each machine owns a directory with three scripts:
+
+```text
+machines/<machine-id>/
+  machine.lua  # metadata and future URDF declaration
+  import.lua   # reverse post-processor: NC -> Toolpath
+  export.lua   # post-processor: Toolpath -> NC
+```
+
+`MachineScriptFiles` stores these paths. The C++ `Machine` class also exposes placeholder APIs for URDF loading, link/joint creation, visual meshes and forward kinematics.

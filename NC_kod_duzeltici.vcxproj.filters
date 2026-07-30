@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<ClCompile Include="src\ofApp.cpp">
@@ -7,7 +7,13 @@
 		<ClCompile Include="src\main.cpp">
 			<Filter>src</Filter>
 		</ClCompile>
+		<ClCompile Include="src\machine\Machine.cpp">
+			<Filter>src\machine</Filter>
+		</ClCompile>
 		<ClCompile Include="src\scripting\LuaBindings.cpp">
+			<Filter>src\scripting</Filter>
+		</ClCompile>
+		<ClCompile Include="src\scripting\MachineBindings.cpp">
 			<Filter>src\scripting</Filter>
 		</ClCompile>
 		<ClCompile Include="src\scripting\NcImporter.cpp">
@@ -204,6 +210,9 @@
 		<Filter Include="src">
 			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
 		</Filter>
+		<Filter Include="src\machine">
+			<UniqueIdentifier>{8A48A4C9-95D0-45A7-AF36-A3D5B8652B01}</UniqueIdentifier>
+		</Filter>
 		<Filter Include="src\scripting">
 			<UniqueIdentifier>{63607BA5-44FF-420A-8AAF-5F47B0974676}</UniqueIdentifier>
 		</Filter>
@@ -211,96 +220,99 @@
 			<UniqueIdentifier>{0EC5136E-0EC1-443B-8B50-CAE273B657CD8}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons">
-			<UniqueIdentifier>{6632BB0E--329-D-45-3C-8-B0E-0418DD2988A1}</UniqueIdentifier>
+			<UniqueIdentifier>{6313299C--77B-4-41-64-8-90C-FAF5885C870A}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGpr">
-			<UniqueIdentifier>{C98A69FA--40C-3-40-AE-9-B5A-082DA654B5DD}</UniqueIdentifier>
+			<UniqueIdentifier>{8A019B74--ED8-4-43-D5-A-902-340E23AB9D53}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGpr\src">
-			<UniqueIdentifier>{A3F20756--534-3-49-33-B-7A1-2DE1C1E44159}</UniqueIdentifier>
+			<UniqueIdentifier>{6EBA1A8C--B9F-8-49-AA-9-B54-574EB95EB34B}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui">
-			<UniqueIdentifier>{FA227B66--361-F-45-92-8-330-8DAF2FD3FDBB}</UniqueIdentifier>
+			<UniqueIdentifier>{7D9011F8--9BC-A-4C-75-A-9BC-19246B646075}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\src">
-			<UniqueIdentifier>{10DBD622--9F9-9-40-15-9-9C9-73BAE70AAFE9}</UniqueIdentifier>
+			<UniqueIdentifier>{E41CEBDA--031-9-46-F7-8-A6D-69C7413244D8}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs">
-			<UniqueIdentifier>{3433E278--D4A-E-48-E4-9-D1D-6F45EED31E38}</UniqueIdentifier>
+			<UniqueIdentifier>{7455F5F4--E6E-2-49-B5-A-CF6-0733D5ED02A5}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui">
-			<UniqueIdentifier>{1C731418--764-2-47-B8-9-2FE-545C84F9340E}</UniqueIdentifier>
+			<UniqueIdentifier>{C4D2E0E9--077-E-41-D4-B-00C-70D88B845972}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui\backends">
-			<UniqueIdentifier>{67B5D345--561-7-4A-9A-A-3B5-2AF4DCBB53AC}</UniqueIdentifier>
+			<UniqueIdentifier>{E66CAC1F--5D3-B-44-03-B-018-AF9C5C9E36E4}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui\extras">
-			<UniqueIdentifier>{B8DFC12D--47A-B-4D-65-A-426-710200D67134}</UniqueIdentifier>
+			<UniqueIdentifier>{215C1CD6--EF4-7-4C-5F-A-5F6-4BFAE88E25FA}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGui\libs\imgui\src">
-			<UniqueIdentifier>{4A7DBAFC--9A1-2-43-F4-A-BBE-2A9E3ADD19E7}</UniqueIdentifier>
+			<UniqueIdentifier>{947EDEC5--29D-7-4B-E5-8-F0B-0AF7B89B2868}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor">
-			<UniqueIdentifier>{6A30A602--F14-4-48-77-8-1DF-2CDC39A88256}</UniqueIdentifier>
+			<UniqueIdentifier>{3D70BCF2--DF5-E-40-08-8-126-902B5055C338}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor\src">
-			<UniqueIdentifier>{6BAA2B1A--497-0-44-9A-8-FF1-802D382D153B}</UniqueIdentifier>
+			<UniqueIdentifier>{F9C628EE--7FB-7-47-2F-8-FA7-28A5D283BAB2}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor\libs">
-			<UniqueIdentifier>{D463B2B9--B23-D-49-BA-B-025-4E0E31252F60}</UniqueIdentifier>
+			<UniqueIdentifier>{C3B3C673--5BF-4-45-41-A-9F0-CAEFB6B9D110}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuiTextEditor\libs\ImGuiColorTextEdit">
-			<UniqueIdentifier>{883F4198--B4C-C-4D-A4-9-1A6-2E9D9710F6B7}</UniqueIdentifier>
+			<UniqueIdentifier>{6A351E02--67C-5-46-BD-A-E52-B30EA567C6CD}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo">
-			<UniqueIdentifier>{B780D949--183-A-45-02-8-DD8-BDEFA642D2EE}</UniqueIdentifier>
+			<UniqueIdentifier>{9F41A995--73A-6-4B-1C-9-31B-189957AFB014}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo\src">
-			<UniqueIdentifier>{E4EED9E2--BE4-D-47-15-B-1BF-09601745B18E}</UniqueIdentifier>
+			<UniqueIdentifier>{A50C242C--353-2-4A-B8-A-E32-D626565C1385}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo\libs">
-			<UniqueIdentifier>{492DCB31--18C-7-4A-31-B-3D0-FFAAD02BEB4A}</UniqueIdentifier>
+			<UniqueIdentifier>{45423CAE--E30-3-4D-16-A-3A9-0740FFC4AE24}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxImGuizmo\libs\ImGuizmo">
-			<UniqueIdentifier>{8E191D52--EFA-F-44-CE-9-C79-66EA0666ADE8}</UniqueIdentifier>
+			<UniqueIdentifier>{B41E56DF--B1D-D-47-47-9-572-7E6573D5FF6C}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxLua">
-			<UniqueIdentifier>{AA9F51D3--E0C-3-4C-4F-A-875-00BE9B2EE440}</UniqueIdentifier>
+			<UniqueIdentifier>{4CE8377D--B21-1-44-7C-A-59D-D79CF656CB10}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxLua\src">
-			<UniqueIdentifier>{A14DC301--8B5-4-4A-7C-A-A93-75AF1BDD1FAA}</UniqueIdentifier>
+			<UniqueIdentifier>{17C85672--4F2-3-40-7D-8-FDC-BDBCC3269DF7}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxLua\libs">
-			<UniqueIdentifier>{850B5038--C3C-1-48-3F-8-3FB-52B970D0F11D}</UniqueIdentifier>
+			<UniqueIdentifier>{6B622931--820-B-4D-31-8-554-92FF6715627D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxLua\libs\lua">
-			<UniqueIdentifier>{E0C6303F--60F-F-45-38-8-6D1-4903A03E38D4}</UniqueIdentifier>
+			<UniqueIdentifier>{3A07E29A--A7B-9-40-17-9-92F-C21670F5CEDC}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxLua\libs\lua\src">
-			<UniqueIdentifier>{9C294599--A1B-1-4F-06-9-31E-728503492A02}</UniqueIdentifier>
+			<UniqueIdentifier>{4101EBAF--D70-0-49-14-9-705-F018137EB11F}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxSol2">
-			<UniqueIdentifier>{6323C768--D56-5-4C-12-A-1A2-1A60EC0CD865}</UniqueIdentifier>
+			<UniqueIdentifier>{FB592798--210-A-44-F6-B-75C-8D29F7A5C033}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxSol2\src">
-			<UniqueIdentifier>{19A9EEEA--545-8-41-20-A-5A8-D72E0FEF7175}</UniqueIdentifier>
+			<UniqueIdentifier>{D54AF5DD--DD0-B-4B-9B-9-979-51A20765A6D0}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxSol2\libs">
-			<UniqueIdentifier>{1BABE4FE--2BA-7-45-9F-8-6DF-DB533BDF4E21}</UniqueIdentifier>
+			<UniqueIdentifier>{3B9B93A6--2C2-3-45-A3-B-E4A-95CECF9330CE}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxSol2\libs\sol2">
-			<UniqueIdentifier>{6037DCE3--D9E-9-47-FF-9-CE1-4EEC32692171}</UniqueIdentifier>
+			<UniqueIdentifier>{16397397--ABE-0-4A-3A-A-34A-4B31D0A1186F}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxSol2\libs\sol2\include">
-			<UniqueIdentifier>{0A83D6AF--0D4-B-4F-01-A-C97-202B5B3BB1B2}</UniqueIdentifier>
+			<UniqueIdentifier>{A816D33D--6C9-1-45-5D-8-407-3147E962D1FF}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxSol2\libs\sol2\include\sol">
-			<UniqueIdentifier>{4CA9D405--165-B-41-46-B-A1B-6831B6301A5D}</UniqueIdentifier>
+			<UniqueIdentifier>{EB8C4C1B--E99-8-42-0A-8-4B9-E5D1A047EFEE}</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
 		<ClInclude Include="src\ofApp.h">
 			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\machine\Machine.h">
+			<Filter>src\machine</Filter>
 		</ClInclude>
 		<ClInclude Include="src\scripting\LuaBindings.h">
 			<Filter>src\scripting</Filter>
@@ -538,3 +550,5 @@
 		<ResourceCompile Include="icon.rc" />
 	</ItemGroup>
 </Project>
+
+
