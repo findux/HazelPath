@@ -205,10 +205,10 @@
 			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="src\scripting">
-			<UniqueIdentifier>{63607BA5--44F-F-42-0A-8-AAF-5F47B0974676}</UniqueIdentifier>
+			<UniqueIdentifier>{63607BA5-44FF-420A-8AAF-5F47B0974676}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="src\toolpath">
-			<UniqueIdentifier>{0EC5136E--EC0-1-44-3B-8-50C-AE273B657CD8}</UniqueIdentifier>
+			<UniqueIdentifier>{0EC5136E-0EC1-443B-8B50-CAE273B657CD8}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons">
 			<UniqueIdentifier>{6632BB0E--329-D-45-3C-8-B0E-0418DD2988A1}</UniqueIdentifier>
