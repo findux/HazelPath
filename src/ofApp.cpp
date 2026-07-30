@@ -27,23 +27,11 @@ void ofApp::setup(){
 		ofLogNotice("Lua") << message;
 	});
 
-	const nc::NcImportResult importResult = nc::importNcWithMachineScript(
-		scripting.state(), currentMachine.getImportScriptPath(), initialNc);
-	if (importResult.success) {
-		currentToolpath = importResult.toolpath;
-		simulation.setToolpath(&currentToolpath);
-		simulation.play();
-		statusMessage = "NC donusturuldu: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
-		ofLogNotice("NC Import") << statusMessage;
-	} else {
-		statusMessage = importResult.error;
-		ofLogError("NC Import") << importResult.error;
-	}
-
 	ofxImGuiTextEditorSettings editorSettings;
 	editorSettings.languageDefinition = TextEditor::LanguageDefinition::GCode();
 	textEditor.setup(editorSettings);
 	textEditor.set(initialNc);
+	interpretEditorText();
 
 	
 	//camera.setPosition(glm::vec3(100.0f, -100.0f, 50.0f));
@@ -53,6 +41,22 @@ void ofApp::setup(){
 	resetCamera();
 }
 
+//--------------------------------------------------------------
+void ofApp::interpretEditorText(){
+	const nc::NcImportResult importResult = nc::importNcWithMachineScript(
+		scripting.state(), currentMachine.getImportScriptPath(), textEditor.get());
+	if (importResult.success) {
+		currentToolpath = importResult.toolpath;
+		simulation.setToolpath(&currentToolpath);
+		simulation.play();
+		statusMessage = "NC yorumlandi: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
+		ofLogNotice("NC Import") << statusMessage;
+	} else {
+		simulation.stop();
+		statusMessage = importResult.error;
+		ofLogError("NC Import") << importResult.error;
+	}
+}
 //--------------------------------------------------------------
 void ofApp::resetCamera(){
 	const glm::vec3 target(0.0f, 0.0f, 0.0f);
@@ -111,7 +115,7 @@ void ofApp::drawScene(int width, int height){
 	ofSetColor(255);
 	ofDrawAxis(150.0f);
 	ofSetColor(255, 140, 40);
-	ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
+	//ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
 	currentMachine.drawLinks();
 	camera.end();
 
@@ -190,6 +194,10 @@ void ofApp::drawInterface(){
 
 	ImGui::BeginChild("##EditorPanel", ImVec2(leftWidth, panelsHeight), true);
 	ImGui::TextUnformatted("G-code Editor");
+	ImGui::SameLine();
+	if (ImGui::Button("Yeniden Yorumla")) {
+		interpretEditorText();
+	}
 	ImGui::Separator();
 	textEditor.draw("##GCodeEditor");
 	ImGui::EndChild();

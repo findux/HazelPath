@@ -30,6 +30,7 @@ class ofApp : public ofBaseApp{
 
 	private:
 		void resetCamera();
+		void interpretEditorText();
 		void drawScene(int width, int height);
 		void drawInterface();
 
