@@ -10,6 +10,9 @@
 		<ClCompile Include="src\machine\Machine.cpp">
 			<Filter>src\machine</Filter>
 		</ClCompile>
+		<ClCompile Include="src\scripting\GlmBindings.cpp">
+			<Filter>src\scripting</Filter>
+		</ClCompile>
 		<ClCompile Include="src\scripting\LuaBindings.cpp">
 			<Filter>src\scripting</Filter>
 		</ClCompile>

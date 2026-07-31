@@ -1,6 +1,6 @@
--- Generic 3-axis reverse post-processor example.
+﻿-- Generic 3-axis reverse post-processor example.
 -- Contract: convert_nc(nc_text) must return a Toolpath object.
--- A real machine profile can replace modal rules without changing C++.
+-- I/J/K arc centers are offsets from the arc start position.
 
 local function copy_position(position)
     local result = AxisPosition.new(position.x, position.y, position.z)
@@ -24,6 +24,7 @@ function convert_nc(nc_text)
     local current = AxisPosition.new(0.0, 0.0, 0.0)
     local absolute_mode = true
     local motion_mode = 0
+    local arc_plane = ArcPlane.XY
     local feed_rate = 0.0
     path:set_current_position(current)
 
@@ -31,7 +32,9 @@ function convert_nc(nc_text)
         local block = program:get_block(block_index)
         if not block:is_deleted() then
             local next_position = copy_position(current)
+            local center_offset = glm.vec3(0.0, 0.0, 0.0)
             local has_axis = false
+            local has_arc_center = false
             local source_line = block:line_number()
             if source_line < 0 then
                 source_line = block_index + 1
@@ -44,8 +47,14 @@ function convert_nc(nc_text)
                     local value = chunk:address():number()
 
                     if word == "G" then
+                        of_log(tostring(value))
                         if approximately(value, 0) then motion_mode = 0 end
                         if approximately(value, 1) then motion_mode = 1 end
+                        if approximately(value, 2) then motion_mode = 2 end
+                        if approximately(value, 3) then motion_mode = 3 end
+                        if approximately(value, 17) then arc_plane = ArcPlane.XY end
+                        if approximately(value, 18) then arc_plane = ArcPlane.XZ end
+                        if approximately(value, 19) then arc_plane = ArcPlane.YZ end
                         if approximately(value, 20) then
                             path.units = ToolpathUnits.Inches
                         end
@@ -72,24 +81,52 @@ function convert_nc(nc_text)
                     elseif word == "C" then
                         next_position.c = absolute_mode and value or (current.c + value)
                         has_axis = true
+                    elseif word == "I" then
+                        center_offset.x = value
+                        has_arc_center = true
+                    elseif word == "J" then
+                        center_offset.y = value
+                        has_arc_center = true
+                    elseif word == "K" then
+                        center_offset.z = value
+                        has_arc_center = true
                     elseif word == "F" then
                         feed_rate = value
                     end
                 end
             end
 
-            if has_axis then
+            local has_motion = has_axis or
+                ((motion_mode == 2 or motion_mode == 3) and has_arc_center)
+            if has_motion then
                 if motion_mode == 0 then
                     path:add_rapid(next_position, source_line, block:source())
                 elseif motion_mode == 1 then
                     path:add_linear(next_position, feed_rate, source_line, block:source())
+                elseif motion_mode == 2 or motion_mode == 3 then
+                    if not has_arc_center then
+                        error("G2/G3 I/J/K yay merkezi gerektiriyor; satir " .. source_line)
+                    end
+
+                    local start_xyz = glm.vec3(current.x, current.y, current.z)
+                    local center_xyz = start_xyz + center_offset
+                    local center = AxisPosition.new(center_xyz.x, center_xyz.y, center_xyz.z)
+                    local clockwise = motion_mode == 2
+                    path:add_arc(
+                        next_position,
+                        center,
+                        clockwise,
+                        arc_plane,
+                        feed_rate,
+                        source_line,
+                        block:source())
                 end
                 current = next_position
             end
         end
     end
 
-    path:set_metadata("converter", "generic_3axis.lua")
+    path:set_metadata("converter", "generic_3axis/import.lua")
     path:set_metadata("contract_version", "1")
     return path
 end

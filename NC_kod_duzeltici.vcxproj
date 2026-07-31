@@ -227,6 +227,7 @@
 		<ClCompile Include="src\main.cpp" />
 		<ClCompile Include="src\ofApp.cpp" />
 		<ClCompile Include="src\machine\Machine.cpp" />
+		<ClCompile Include="src\scripting\GlmBindings.cpp" />
 		<ClCompile Include="src\scripting\LuaBindings.cpp" />
 		<ClCompile Include="src\scripting\MachineBindings.cpp" />
 		<ClCompile Include="src\scripting\NcImporter.cpp" />

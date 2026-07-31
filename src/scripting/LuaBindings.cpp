@@ -163,6 +163,7 @@ void registerGprBindings(sol::state& state) {
 }
 
 void registerAllBindings(sol::state& state) {
+	registerGlmBindings(state);
 	registerToolpathBindings(state);
 	registerGprBindings(state);
 	registerMachineBindings(state);
