@@ -15,12 +15,13 @@ void SimulationController::play() {
 	if (toolpath == nullptr || toolpath->empty()) {
 		return;
 	}
-	if (status == SimulationStatus::Finished) {
+	if (status == SimulationStatus::Finished && speed >= 0.0) {
 		stop();
+	} else if (status == SimulationStatus::Stopped && speed < 0.0) {
+		seek(1.0);
 	}
 	status = SimulationStatus::Playing;
 }
-
 void SimulationController::pause() {
 	if (status == SimulationStatus::Playing) {
 		status = SimulationStatus::Paused;
@@ -39,7 +40,23 @@ void SimulationController::update(double deltaSeconds) {
 		return;
 	}
 
-	double remainingSeconds = std::max(deltaSeconds, 0.0) * speed;
+	const double frameSeconds = std::max(deltaSeconds, 0.0);
+	if (speed < 0.0) {
+		const double totalDuration = totalDurationSeconds();
+		if (totalDuration <= 0.0) {
+			return;
+		}
+		const double targetProgress = getProgress() + frameSeconds * speed / totalDuration;
+		if (targetProgress <= 0.0) {
+			seek(0.0);
+			status = SimulationStatus::Stopped;
+		} else {
+			seek(targetProgress);
+		}
+		return;
+	}
+
+	double remainingSeconds = frameSeconds * speed;
 	while (status == SimulationStatus::Playing) {
 		if (commandIndex >= toolpath->size()) {
 			status = SimulationStatus::Finished;
@@ -120,7 +137,7 @@ void SimulationController::seek(double normalizedProgress) {
 	}
 }
 void SimulationController::setSpeed(double value) {
-	speed = std::max(value, 0.0);
+	speed = value;
 }
 
 double SimulationController::getSpeed() const { return speed; }

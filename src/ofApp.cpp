@@ -282,6 +282,7 @@ void ofApp::drawInterface(){
 
 	ImGui::Separator();
 	if (ImGui::Button("Oynat")) {
+		if (simulation.getSpeed() == 0.0) simulation.setSpeed(1.0);
 		simulation.play();
 	}
 	ImGui::SameLine();
@@ -293,6 +294,17 @@ void ofApp::drawInterface(){
 		simulation.stop();
 	}
 	ImGui::SameLine();
+	int speedStep = static_cast<int>(simulation.getSpeed());
+	ImGui::SetNextItemWidth(120.0f);
+	if (ImGui::SliderInt("Hiz##SimulationSpeed", &speedStep, -8, 8, "%dx")) {
+		simulation.setSpeed(static_cast<double>(speedStep));
+		if (speedStep == 0) {
+			simulation.pause();
+		} else {
+			simulation.play();
+		}
+	}
+	ImGui::SameLine();
 	float timelinePercent = static_cast<float>(simulation.getProgress() * 100.0);
 	ImGui::SetNextItemWidth(-1.0f);
 	if (ImGui::SliderFloat("##SimulationTimeline", &timelinePercent, 0.0f, 100.0f, "%.1f%%")) {
@@ -301,7 +313,7 @@ void ofApp::drawInterface(){
 
 	const nc::AxisPosition& simulatedPosition = simulation.getPosition();
 	const char* simulationText = "Durdu";
-	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = "Oynuyor";
+	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = simulation.getSpeed() < 0.0 ? "Geri sariyor" : "Oynuyor";
 	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatildi";
 	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandi";
 	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
