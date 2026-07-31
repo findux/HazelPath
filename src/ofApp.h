@@ -31,6 +31,7 @@ class ofApp : public ofBaseApp{
 	private:
 		void resetCamera();
 		void interpretEditorText();
+		void rebuildToolpathMesh();
 		void drawScene(int width, int height);
 		void drawInterface();
 
@@ -42,6 +43,7 @@ class ofApp : public ofBaseApp{
 		nc::SimulationController simulation;
 		ofEasyCam camera;
 		ofFbo sceneFbo;
+		ofMesh toolpathMesh;
 
 		float splitRatio = 0.2f;
 		std::string statusMessage = "Hazir";

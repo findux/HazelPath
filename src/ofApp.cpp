@@ -1,5 +1,7 @@
 ﻿#include "ofApp.h"
 
+#include "simulation/MotionInterpolator.h"
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetVerticalSync(true);
@@ -47,14 +49,57 @@ void ofApp::interpretEditorText(){
 		scripting.state(), currentMachine.getImportScriptPath(), textEditor.get());
 	if (importResult.success) {
 		currentToolpath = importResult.toolpath;
+		rebuildToolpathMesh();
 		simulation.setToolpath(&currentToolpath);
 		simulation.play();
 		statusMessage = "NC yorumlandi: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
 		ofLogNotice("NC Import") << statusMessage;
 	} else {
 		simulation.stop();
+		toolpathMesh.clear();
 		statusMessage = importResult.error;
 		ofLogError("NC Import") << importResult.error;
+	}
+}
+//--------------------------------------------------------------
+void ofApp::rebuildToolpathMesh(){
+	toolpathMesh.clear();
+	toolpathMesh.setMode(OF_PRIMITIVE_LINES);
+
+	const float unitScale = currentToolpath.units == nc::Units::Inches ? 25.4f : 1.0f;
+	const auto point = [unitScale](const nc::AxisPosition& position) {
+		return glm::vec3(
+			static_cast<float>(position.x) * unitScale,
+			static_cast<float>(position.y) * unitScale,
+			static_cast<float>(position.z) * unitScale);
+	};
+	const auto addSegment = [this, &point](
+		const nc::AxisPosition& start,
+		const nc::AxisPosition& end,
+		const ofFloatColor& color) {
+		toolpathMesh.addVertex(point(start));
+		toolpathMesh.addColor(color);
+		toolpathMesh.addVertex(point(end));
+		toolpathMesh.addColor(color);
+	};
+
+	for (std::size_t index = 0; index < currentToolpath.size(); ++index) {
+		const nc::ToolpathCommand command = currentToolpath.getCommand(index);
+		if (command.type == nc::MotionType::Rapid) {
+			addSegment(command.start, command.end, ofFloatColor(0.20f, 0.60f, 1.0f));
+		} else if (command.type == nc::MotionType::Linear) {
+			addSegment(command.start, command.end, ofFloatColor(0.20f, 1.0f, 0.35f));
+		} else if (command.type == nc::MotionType::ArcClockwise ||
+			command.type == nc::MotionType::ArcCounterClockwise) {
+			constexpr int ArcSegments = 48;
+			nc::AxisPosition previous = command.start;
+			for (int segment = 1; segment <= ArcSegments; ++segment) {
+				const double t = static_cast<double>(segment) / ArcSegments;
+				const nc::AxisPosition current = nc::MotionInterpolator::sample(command, t);
+				addSegment(previous, current, ofFloatColor(1.0f, 0.65f, 0.15f));
+				previous = current;
+			}
+		}
 	}
 }
 //--------------------------------------------------------------
@@ -114,6 +159,11 @@ void ofApp::drawScene(int width, int height){
 	ofDrawGrid(100.0f, 10, true, false, false, true);
 	ofSetColor(255);
 	ofDrawAxis(150.0f);
+	ofPushStyle();
+	ofSetColor(255);
+	ofSetLineWidth(2.5f);
+	toolpathMesh.draw();
+	ofPopStyle();
 	ofSetColor(255, 140, 40);
 	//ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
 	currentMachine.drawLinks();
