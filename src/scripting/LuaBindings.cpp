@@ -20,6 +20,10 @@ std::string oneCharacter(char value) {
 namespace nc::lua {
 
 void registerToolpathBindings(sol::state& state) {
+	state.set_function("of_log", [](const std::string & message) {
+		ofLogNotice("Lua") << message;
+	});
+
 	state.new_enum<Units>("ToolpathUnits", {
 		{"Millimeters", Units::Millimeters},
 		{"Inches", Units::Inches}
