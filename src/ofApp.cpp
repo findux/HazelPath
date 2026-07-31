@@ -222,18 +222,6 @@ void ofApp::drawInterface(){
 			ImGui::MenuItem("G-code metin editoru", nullptr, false, false);
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Simulasyon")) {
-			if (ImGui::MenuItem("Oynat")) {
-				simulation.play();
-			}
-			if (ImGui::MenuItem("Duraklat")) {
-				simulation.pause();
-			}
-			if (ImGui::MenuItem("Durdur")) {
-				simulation.stop();
-			}
-			ImGui::EndMenu();
-		}
 		if (ImGui::BeginMenu("Gorunum")) {
 			if (ImGui::MenuItem("Kamerayi sifirla")) {
 				resetCamera();
@@ -246,9 +234,9 @@ void ofApp::drawInterface(){
 	}
 
 	const float splitterWidth = 7.0f;
-	const float statusHeight = ImGui::GetFrameHeightWithSpacing();
+	const float footerHeight = ImGui::GetFrameHeightWithSpacing() * 2.0f + 2.0f;
 	const ImVec2 available = ImGui::GetContentRegionAvail();
-	const float panelsHeight = std::max(available.y - statusHeight, 1.0f);
+	const float panelsHeight = std::max(available.y - footerHeight, 1.0f);
 	const float usableWidth = std::max(available.x - splitterWidth, 1.0f);
 	float leftWidth = usableWidth * splitRatio;
 
@@ -293,15 +281,32 @@ void ofApp::drawInterface(){
 	ImGui::EndChild();
 
 	ImGui::Separator();
+	if (ImGui::Button("Oynat")) {
+		simulation.play();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Duraklat")) {
+		simulation.pause();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Durdur")) {
+		simulation.stop();
+	}
+	ImGui::SameLine();
+	float timelinePercent = static_cast<float>(simulation.getProgress() * 100.0);
+	ImGui::SetNextItemWidth(-1.0f);
+	if (ImGui::SliderFloat("##SimulationTimeline", &timelinePercent, 0.0f, 100.0f, "%.1f%%")) {
+		simulation.seek(timelinePercent / 100.0f);
+	}
+
 	const nc::AxisPosition& simulatedPosition = simulation.getPosition();
 	const char* simulationText = "Durdu";
 	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = "Oynuyor";
 	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatildi";
 	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandi";
-	ImGui::Text("%s | Sim: %s %.0f%% | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
-		statusMessage.c_str(), simulationText, simulation.getProgress() * 100.0,
-		simulation.getSourceLine(), simulatedPosition.x, simulatedPosition.y,
-		simulatedPosition.z, ofGetFrameRate());
+	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
+		statusMessage.c_str(), simulationText, simulation.getSourceLine(),
+		simulatedPosition.x, simulatedPosition.y, simulatedPosition.z, ofGetFrameRate());
 
 	ImGui::End();
 }

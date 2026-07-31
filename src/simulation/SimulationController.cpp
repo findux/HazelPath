@@ -74,6 +74,51 @@ void SimulationController::update(double deltaSeconds) {
 	}
 }
 
+void SimulationController::seek(double normalizedProgress) {
+	if (toolpath == nullptr || toolpath->empty()) {
+		return;
+	}
+
+	const bool keepPlaying = status == SimulationStatus::Playing;
+	const double progress = std::max(0.0, std::min(normalizedProgress, 1.0));
+	if (progress <= 0.0) {
+		commandIndex = 0;
+		commandElapsedSeconds = 0.0;
+		resetPosition();
+		status = keepPlaying ? SimulationStatus::Playing : SimulationStatus::Stopped;
+		return;
+	}
+
+	const double totalDuration = totalDurationSeconds();
+	if (progress >= 1.0 || totalDuration <= 0.0) {
+		commandIndex = toolpath->size();
+		commandElapsedSeconds = 0.0;
+		position = toolpath->getCommand(toolpath->size() - 1).end;
+		status = SimulationStatus::Finished;
+		return;
+	}
+
+	double remainingSeconds = totalDuration * progress;
+	position = toolpath->getCommand(0).start;
+	for (std::size_t index = 0; index < toolpath->size(); ++index) {
+		const ToolpathCommand command = toolpath->getCommand(index);
+		const double duration = MotionInterpolator::durationSeconds(
+			command, rapidFeedRate, defaultFeedRate);
+		if (duration <= 0.0) {
+			position = command.end;
+			continue;
+		}
+		if (remainingSeconds <= duration) {
+			commandIndex = index;
+			commandElapsedSeconds = remainingSeconds;
+			position = MotionInterpolator::sample(command, remainingSeconds / duration);
+			status = keepPlaying ? SimulationStatus::Playing : SimulationStatus::Paused;
+			return;
+		}
+		remainingSeconds -= duration;
+		position = command.end;
+	}
+}
 void SimulationController::setSpeed(double value) {
 	speed = std::max(value, 0.0);
 }
@@ -104,23 +149,23 @@ double SimulationController::getProgress() const {
 	if (toolpath == nullptr || toolpath->empty()) {
 		return 0.0;
 	}
-	if (status == SimulationStatus::Finished) {
-		return 1.0;
-	}
-	if (commandIndex >= toolpath->size()) {
+	if (status == SimulationStatus::Finished || commandIndex >= toolpath->size()) {
 		return 1.0;
 	}
 
-	const ToolpathCommand command = toolpath->getCommand(commandIndex);
-	const double duration = MotionInterpolator::durationSeconds(
-		command, rapidFeedRate, defaultFeedRate);
-	const double commandProgress = duration > 0.0
-		? std::min(commandElapsedSeconds / duration, 1.0)
-		: 0.0;
-	return (static_cast<double>(commandIndex) + commandProgress) /
-		static_cast<double>(toolpath->size());
+	const double totalDuration = totalDurationSeconds();
+	if (totalDuration <= 0.0) {
+		return 0.0;
+	}
+
+	double elapsedSeconds = 0.0;
+	for (std::size_t index = 0; index < commandIndex; ++index) {
+		elapsedSeconds += MotionInterpolator::durationSeconds(
+			toolpath->getCommand(index), rapidFeedRate, defaultFeedRate);
+	}
+	elapsedSeconds += commandElapsedSeconds;
+	return std::max(0.0, std::min(elapsedSeconds / totalDuration, 1.0));
 }
-
 void SimulationController::resetPosition() {
 	position = AxisPosition{};
 	if (toolpath != nullptr && !toolpath->empty()) {
@@ -128,4 +173,16 @@ void SimulationController::resetPosition() {
 	}
 }
 
+double SimulationController::totalDurationSeconds() const {
+	if (toolpath == nullptr) {
+		return 0.0;
+	}
+
+	double total = 0.0;
+	for (std::size_t index = 0; index < toolpath->size(); ++index) {
+		total += MotionInterpolator::durationSeconds(
+			toolpath->getCommand(index), rapidFeedRate, defaultFeedRate);
+	}
+	return total;
+}
 } // namespace nc

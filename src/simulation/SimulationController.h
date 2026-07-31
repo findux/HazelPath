@@ -20,6 +20,7 @@ public:
 	void pause();
 	void stop();
 	void update(double deltaSeconds);
+	void seek(double normalizedProgress);
 
 	void setSpeed(double value);
 	double getSpeed() const;
@@ -34,6 +35,7 @@ public:
 
 private:
 	void resetPosition();
+	double totalDurationSeconds() const;
 
 	const Toolpath* toolpath = nullptr;
 	SimulationStatus status = SimulationStatus::Stopped;
