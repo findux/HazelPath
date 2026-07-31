@@ -2,6 +2,73 @@
 
 #include "simulation/MotionInterpolator.h"
 
+#include <cctype>
+
+namespace {
+
+bool tokenizeGCodeLine(
+	const char* begin,
+	const char* end,
+	const char*& tokenBegin,
+	const char*& tokenEnd,
+	TextEditor::PaletteIndex& color) {
+	if (begin == end) {
+		return false;
+	}
+
+	color = TextEditor::PaletteIndex::Punctuation; // White for ordinary lines.
+	bool insideParenthesisComment = false;
+	for (const char* cursor = begin; cursor < end; ++cursor) {
+		if (*cursor == ';' && !insideParenthesisComment) {
+			break;
+		}
+		if (*cursor == '(') {
+			insideParenthesisComment = true;
+			continue;
+		}
+		if (*cursor == ')') {
+			insideParenthesisComment = false;
+			continue;
+		}
+		if (insideParenthesisComment || std::toupper(static_cast<unsigned char>(*cursor)) != 'G') {
+			continue;
+		}
+		if (cursor > begin && std::isalpha(static_cast<unsigned char>(cursor[-1]))) {
+			continue;
+		}
+
+		const char* digit = cursor + 1;
+		if (digit >= end || !std::isdigit(static_cast<unsigned char>(*digit))) {
+			continue;
+		}
+
+		int code = 0;
+		while (digit < end && std::isdigit(static_cast<unsigned char>(*digit))) {
+			code = code * 10 + (*digit - '0');
+			++digit;
+		}
+
+		if (code == 0) {
+			color = TextEditor::PaletteIndex::String; // Red.
+			break;
+		}
+		if (code == 1) {
+			color = TextEditor::PaletteIndex::Number; // Light green.
+			break;
+		}
+		if (code == 2 || code == 3) {
+			color = TextEditor::PaletteIndex::Keyword; // Light blue.
+			break;
+		}
+	}
+
+	tokenBegin = begin;
+	tokenEnd = end;
+	return true;
+}
+
+} // namespace
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetVerticalSync(true);
@@ -40,7 +107,10 @@ void ofApp::setup(){
 	});
 
 	ofxImGuiTextEditorSettings editorSettings;
-	editorSettings.languageDefinition = TextEditor::LanguageDefinition::GCode();
+	TextEditor::LanguageDefinition gcodeLanguage = TextEditor::LanguageDefinition::GCode();
+	gcodeLanguage.mTokenize = &tokenizeGCodeLine;
+	gcodeLanguage.mTokenRegexStrings.clear();
+	editorSettings.languageDefinition = gcodeLanguage;
 	textEditor.setup(editorSettings);
 	textEditor.set(initialNc);
 	interpretEditorText();
