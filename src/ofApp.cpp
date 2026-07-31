@@ -14,7 +14,17 @@ void ofApp::setup(){
 		"G21\n"
 		"G90\n"
 		"G0 X0 Y0 Z10\n"
-		"G1 X50 Y20 Z-2 F800\n";
+		"G1 X50 Y50 Z10 F800\n"
+		"G1 Z-5\n"
+		"G1 X150\n"
+		"G1 Y150\n"
+		"G3 X200 Y200 R50\n"
+		"G2 X250 Y250 R50\n"
+		"G1 Y300\n"
+		"G1 X50\n"
+		"G1 Y50\n"
+		"G0 Z10\n"
+		"M30";
 
 	scripting.setup();
 	nc::lua::registerAllBindings(scripting.state());
