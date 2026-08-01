@@ -1,8 +1,13 @@
-﻿#include "ofApp.h"
+#include "ofApp.h"
 
 #include "simulation/MotionInterpolator.h"
 
+#include "ofxGpr.h"
+
+#include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <fstream>
 
 namespace {
 
@@ -67,6 +72,36 @@ bool tokenizeGCodeLine(
 	return true;
 }
 
+std::string compactGCode(std::string text) {
+	text.erase(std::remove_if(text.begin(), text.end(), [](unsigned char character) {
+		return std::isspace(character) != 0;
+	}), text.end());
+	std::transform(text.begin(), text.end(), text.begin(), [](unsigned char character) {
+		return static_cast<char>(std::toupper(character));
+	});
+	return text;
+}
+
+std::string canonicalGprBlock(const std::string& line) {
+	if (line.empty()) {
+		return {};
+	}
+
+	try {
+		std::string terminatedLine = line;
+		if (terminatedLine.back() != '\n') {
+			terminatedLine.push_back('\n');
+		}
+		gpr::gcode_program program = gpr::parse_gcode_saving_block_text(terminatedLine);
+		if (program.num_blocks() == 0) {
+			return {};
+		}
+		return compactGCode(program.get_block(0).to_string());
+	} catch (const std::exception&) {
+		return {};
+	}
+}
+
 } // namespace
 
 //--------------------------------------------------------------
@@ -106,13 +141,12 @@ void ofApp::setup(){
 		ofLogNotice("Lua") << message;
 	});
 
-	ofxImGuiTextEditorSettings editorSettings;
 	TextEditor::LanguageDefinition gcodeLanguage = TextEditor::LanguageDefinition::GCode();
 	gcodeLanguage.mTokenize = &tokenizeGCodeLine;
 	gcodeLanguage.mTokenRegexStrings.clear();
-	editorSettings.languageDefinition = gcodeLanguage;
-	textEditor.setup(editorSettings);
-	textEditor.set(initialNc);
+	textEditor.SetLanguageDefinition(gcodeLanguage);
+	textEditor.SetImGuiChildIgnored(true);
+	textEditor.SetText(initialNc);
 	interpretEditorText();
 
 	
@@ -126,21 +160,115 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::interpretEditorText(){
 	const nc::NcImportResult importResult = nc::importNcWithMachineScript(
-		scripting.state(), currentMachine.getImportScriptPath(), textEditor.get());
+		scripting.state(), currentMachine.getImportScriptPath(), textEditor.GetText());
 	if (importResult.success) {
 		currentToolpath = importResult.toolpath;
+		rebuildToolpathEditorLines();
 		rebuildToolpathMesh();
 		simulation.setToolpath(&currentToolpath);
 		simulation.play();
+		editorSimulationLine = -1;
 		statusMessage = "NC yorumlandi: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
 		ofLogNotice("NC Import") << statusMessage;
 	} else {
 		simulation.stop();
 		toolpathMesh.clear();
+		toolpathEditorLines.clear();
+		editorSimulationLine = -1;
 		statusMessage = importResult.error;
 		ofLogError("NC Import") << importResult.error;
 	}
 }
+//--------------------------------------------------------------
+void ofApp::rebuildToolpathEditorLines(){
+	toolpathEditorLines.assign(currentToolpath.size(), -1);
+	const std::vector<std::string> editorLines = textEditor.GetTextLines();
+	std::vector<std::string> canonicalLines;
+	canonicalLines.reserve(editorLines.size());
+	for (const std::string& line : editorLines) {
+		canonicalLines.push_back(canonicalGprBlock(line));
+	}
+
+	std::size_t searchStart = 0;
+	std::string previousSource;
+	int previousEditorLine = -1;
+	for (std::size_t commandIndex = 0; commandIndex < currentToolpath.size(); ++commandIndex) {
+		const nc::ToolpathCommand command = currentToolpath.getCommand(commandIndex);
+		const std::string source = compactGCode(command.sourceText);
+		if (source.empty()) {
+			continue;
+		}
+		if (source == previousSource && previousEditorLine >= 0) {
+			toolpathEditorLines[commandIndex] = previousEditorLine;
+			continue;
+		}
+
+		for (std::size_t lineIndex = searchStart; lineIndex < canonicalLines.size(); ++lineIndex) {
+			if (canonicalLines[lineIndex] == source) {
+				previousSource = source;
+				previousEditorLine = static_cast<int>(lineIndex);
+				toolpathEditorLines[commandIndex] = previousEditorLine;
+				searchStart = lineIndex + 1;
+				break;
+			}
+		}
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::syncEditorToSimulation(){
+	if (toolpathEditorLines.empty()) {
+		return;
+	}
+
+	const std::size_t commandIndex = std::min(
+		simulation.getCommandIndex(), toolpathEditorLines.size() - 1);
+	const int editorLine = toolpathEditorLines[commandIndex];
+	if (editorLine < 0) {
+		return;
+	}
+
+	const bool lineChanged = editorLine != editorSimulationLine;
+	const bool cursorMovedDuringPlayback =
+		simulation.getStatus() == nc::SimulationStatus::Playing &&
+		textEditor.GetCursorPosition().mLine != editorLine;
+	if (!lineChanged && !cursorMovedDuringPlayback) {
+		return;
+	}
+
+	const TextEditor::Coordinates position(editorLine, 0);
+	textEditor.SetCursorPosition(position);
+	textEditor.SetSelection(position, position);
+	if (lineChanged) {
+		editorSimulationLine = editorLine;
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::drawTextEditor(){
+	const ImGuiWindowFlags editorFlags =
+		ImGuiWindowFlags_HorizontalScrollbar |
+		ImGuiWindowFlags_AlwaysHorizontalScrollbar |
+		ImGuiWindowFlags_NoMove;
+	ImGui::BeginChild("##GCodeEditor", ImVec2(0.0f, 0.0f), false, editorFlags);
+	textEditor.Render("##GCodeEditorContent");
+
+	if (editorSimulationLine >= 0) {
+		auto coordi = TextEditor::Coordinates(editorSimulationLine, 0);
+		textEditor.SetCursorPosition(coordi);
+	}
+
+	ImGui::EndChild();
+}
+
+//--------------------------------------------------------------
+void ofApp::saveEditorText(){
+	std::ofstream output(ofToDataPath("program.nc"));
+	if (output.is_open()) {
+		output << textEditor.GetText();
+	}
+}
+
 //--------------------------------------------------------------
 void ofApp::rebuildToolpathMesh(){
 	toolpathMesh.clear();
@@ -255,6 +383,8 @@ void ofApp::drawScene(int width, int height){
 
 //--------------------------------------------------------------
 void ofApp::drawInterface(){
+	syncEditorToSimulation();
+
 	const ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(viewport->WorkSize);
@@ -276,11 +406,11 @@ void ofApp::drawInterface(){
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("Dosya")) {
 			if (ImGui::MenuItem("Yeni")) {
-				textEditor.set("");
+				textEditor.SetText("");
 				statusMessage = "Yeni belge olusturuldu";
 			}
 			if (ImGui::MenuItem("Kaydet", "Ctrl+S")) {
-				textEditor.save("program.nc");
+				saveEditorText();
 				statusMessage = "program.nc kaydedildi";
 			}
 			if (ImGui::MenuItem("Cikis")) {
@@ -300,6 +430,15 @@ void ofApp::drawInterface(){
 			}
 			ImGui::EndMenu();
 		}
+		ImGui::SameLine();
+		static char str0[128] = "Hello, world!";
+		ImGui::InputText("Position", str0, IM_ARRAYSIZE(str0));
+		ImGui::SameLine();
+		if (ImGui::Button("Ucur")) {
+			auto pos = std::stoi(str0);
+			auto coordi = TextEditor::Coordinates(pos, 0);
+			textEditor.SetCursorPosition(coordi);
+		}
 		ImGui::EndMenuBar();
 	}
 
@@ -317,7 +456,7 @@ void ofApp::drawInterface(){
 		interpretEditorText();
 	}
 	ImGui::Separator();
-	textEditor.draw("##GCodeEditor");
+	drawTextEditor();
 	ImGui::EndChild();
 
 	ImGui::SameLine(0.0f, 0.0f);
@@ -387,7 +526,7 @@ void ofApp::drawInterface(){
 	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatildi";
 	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandi";
 	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
-		statusMessage.c_str(), simulationText, simulation.getSourceLine(),
+		statusMessage.c_str(), simulationText, editorSimulationLine + 1,
 		simulatedPosition.x, simulatedPosition.y, simulatedPosition.z, ofGetFrameRate());
 
 	ImGui::End();
@@ -410,7 +549,7 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
 		(key == 's' || key == 'S')) {
-		textEditor.save("program.nc");
+		saveEditorText();
 		statusMessage = "program.nc kaydedildi";
 	}
 }

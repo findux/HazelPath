@@ -1,4 +1,4 @@
-﻿-- Generic 3-axis reverse post-processor example.
+-- Generic 3-axis reverse post-processor example.
 -- Contract: convert_nc(nc_text) must return a Toolpath object.
 -- I/J/K arc centers are offsets from the arc start position.
 
@@ -36,9 +36,6 @@ function convert_nc(nc_text)
             local has_axis = false
             local has_arc_center = false
             local source_line = block:line_number()
-            if source_line < 0 then
-                source_line = block_index + 1
-            end
 
             for chunk_index = 0, block:size() - 1 do
                 local chunk = block:get_chunk(chunk_index)
@@ -47,7 +44,6 @@ function convert_nc(nc_text)
                     local value = chunk:address():number()
 
                     if word == "G" then
-                        of_log(tostring(value))
                         if approximately(value, 0) then motion_mode = 0 end
                         if approximately(value, 1) then motion_mode = 1 end
                         if approximately(value, 2) then motion_mode = 2 end

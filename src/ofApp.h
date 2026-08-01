@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "ofMain.h"
 #include "ofxImGui.h"
@@ -32,11 +32,15 @@ class ofApp : public ofBaseApp{
 		void resetCamera();
 		void interpretEditorText();
 		void rebuildToolpathMesh();
+		void rebuildToolpathEditorLines();
+		void syncEditorToSimulation();
+		void drawTextEditor();
+		void saveEditorText();
 		void drawScene(int width, int height);
 		void drawInterface();
 
 		ofxImGui::Gui gui;
-		ofxImGuiTextEditor textEditor;
+		TextEditor textEditor;
 		ofxSol2 scripting;
 		nc::Toolpath currentToolpath;
 		nc::Machine currentMachine{"generic_3axis", "Generic 3-Axis Mill"};
@@ -44,7 +48,9 @@ class ofApp : public ofBaseApp{
 		ofEasyCam camera;
 		ofFbo sceneFbo;
 		ofMesh toolpathMesh;
+		std::vector<int> toolpathEditorLines;
 
 		float splitRatio = 0.2f;
+		int editorSimulationLine = -1;
 		std::string statusMessage = "Hazir";
 };

@@ -33,9 +33,6 @@ function convert_nc(nc_text)
             local next_position = copy_position(current)
             local has_axis = false
             local source_line = block:line_number()
-            if source_line < 0 then
-                source_line = block_index + 1
-            end
 
             for chunk_index = 0, block:size() - 1 do
                 local chunk = block:get_chunk(chunk_index)

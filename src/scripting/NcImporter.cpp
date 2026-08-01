@@ -30,7 +30,11 @@ NcImportResult importNcWithMachineScript(
 	}
 
 	sol::protected_function converter = converterObject.as<sol::protected_function>();
-	const sol::protected_function_result conversionResult = converter(ncText);
+	std::string terminatedNcText = ncText;
+	if (terminatedNcText.empty() || terminatedNcText.back() != '\n') {
+		terminatedNcText.push_back('\n');
+	}
+	const sol::protected_function_result conversionResult = converter(terminatedNcText);
 	if (!conversionResult.valid()) {
 		const sol::error error = conversionResult;
 		output.error = "NC donusum hatasi: " + std::string(error.what());
