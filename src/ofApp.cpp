@@ -245,6 +245,59 @@ void ofApp::syncEditorToSimulation(){
 }
 
 //--------------------------------------------------------------
+void ofApp::jumpSimulationToEditorLine(int editorLine){
+	if (editorLine < 0 || simulation.getStatus() == nc::SimulationStatus::Playing) {
+		return;
+	}
+
+	std::size_t movementOnLine = currentToolpath.size();
+	std::size_t previousMovement = currentToolpath.size();
+	std::size_t firstMovement = currentToolpath.size();
+	for (std::size_t commandIndex = 0; commandIndex < currentToolpath.size(); ++commandIndex) {
+		const nc::ToolpathCommand command = currentToolpath.getCommand(commandIndex);
+		const bool isMovement =
+			command.type == nc::MotionType::Rapid ||
+			command.type == nc::MotionType::Linear ||
+			command.type == nc::MotionType::ArcClockwise ||
+			command.type == nc::MotionType::ArcCounterClockwise;
+		if (!isMovement || commandIndex >= toolpathEditorLines.size()) {
+			continue;
+		}
+
+		if (firstMovement == currentToolpath.size()) {
+			firstMovement = commandIndex;
+		}
+		const int commandEditorLine = toolpathEditorLines[commandIndex];
+		if (commandEditorLine == editorLine) {
+			movementOnLine = commandIndex;
+			break;
+		}
+		if (commandEditorLine >= 0 && commandEditorLine < editorLine) {
+			previousMovement = commandIndex;
+		}
+	}
+
+	std::size_t targetMovement = currentToolpath.size();
+	double targetProgress = 0.0;
+	if (movementOnLine < currentToolpath.size()) {
+		targetMovement = movementOnLine;
+		statusMessage = "Satir " + ofToString(editorLine + 1) + " takim yolu basina gidildi";
+	} else if (previousMovement < currentToolpath.size()) {
+		targetMovement = previousMovement;
+		targetProgress = 1.0;
+		statusMessage = "Onceki hareketin sonuna gidildi";
+	} else if (firstMovement < currentToolpath.size()) {
+		targetMovement = firstMovement;
+		statusMessage = "Ilk takim yolu basina gidildi";
+	}
+
+	if (targetMovement < currentToolpath.size()) {
+		simulation.seekToCommand(targetMovement, targetProgress);
+		editorSimulationLine = toolpathEditorLines[targetMovement];
+	}
+}
+
+//--------------------------------------------------------------
 void ofApp::drawTextEditor(){
 	const ImGuiWindowFlags editorFlags =
 		ImGuiWindowFlags_HorizontalScrollbar |
@@ -252,10 +305,16 @@ void ofApp::drawTextEditor(){
 		ImGuiWindowFlags_NoMove;
 	ImGui::BeginChild("##GCodeEditor", ImVec2(0.0f, 0.0f), false, editorFlags);
 	textEditor.Render("##GCodeEditorContent");
+	if (simulation.getStatus() != nc::SimulationStatus::Playing &&
+		ImGui::IsWindowHovered() &&
+		ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+		jumpSimulationToEditorLine(textEditor.GetCursorPosition().mLine);
+	}
 
-	if (editorSimulationLine >= 0) {
-		auto coordi = TextEditor::Coordinates(editorSimulationLine, 0);
-		textEditor.SetCursorPosition(coordi);
+	if (simulation.getStatus() == nc::SimulationStatus::Playing &&
+		editorSimulationLine >= 0) {
+		const TextEditor::Coordinates coordinates(editorSimulationLine, 0);
+		textEditor.SetCursorPosition(coordinates);
 	}
 
 	ImGui::EndChild();
@@ -491,7 +550,8 @@ void ofApp::drawInterface(){
 
 	ImGui::Separator();
 	if (ImGui::Button("Oynat")) {
-		if (simulation.getSpeed() == 0.0) simulation.setSpeed(1.0);
+		const double speed = simulation.getSpeed();
+		simulation.setSpeed(speed == 0.0 ? 1.0 : std::abs(speed));
 		simulation.play();
 	}
 	ImGui::SameLine();

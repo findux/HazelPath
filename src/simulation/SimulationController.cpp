@@ -136,6 +136,26 @@ void SimulationController::seek(double normalizedProgress) {
 		position = command.end;
 	}
 }
+
+void SimulationController::seekToCommand(
+	std::size_t index,
+	double normalizedCommandProgress) {
+	if (toolpath == nullptr || index >= toolpath->size()) {
+		return;
+	}
+
+	const ToolpathCommand command = toolpath->getCommand(index);
+	const double commandProgress = std::max(
+		0.0, std::min(normalizedCommandProgress, 1.0));
+	const double duration = MotionInterpolator::durationSeconds(
+		command, rapidFeedRate, defaultFeedRate);
+
+	commandIndex = index;
+	commandElapsedSeconds = duration * commandProgress;
+	position = MotionInterpolator::sample(command, commandProgress);
+	status = SimulationStatus::Paused;
+}
+
 void SimulationController::setSpeed(double value) {
 	speed = value;
 }

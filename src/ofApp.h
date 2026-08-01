@@ -34,6 +34,7 @@ class ofApp : public ofBaseApp{
 		void rebuildToolpathMesh();
 		void rebuildToolpathEditorLines();
 		void syncEditorToSimulation();
+		void jumpSimulationToEditorLine(int editorLine);
 		void drawTextEditor();
 		void saveEditorText();
 		void drawScene(int width, int height);

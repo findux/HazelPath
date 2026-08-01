@@ -21,6 +21,7 @@ public:
 	void stop();
 	void update(double deltaSeconds);
 	void seek(double normalizedProgress);
+	void seekToCommand(std::size_t index, double normalizedCommandProgress);
 
 	void setSpeed(double value);
 	double getSpeed() const;
