@@ -1,4 +1,4 @@
-﻿#include "SimulationController.h"
+#include "SimulationController.h"
 
 #include "MotionInterpolator.h"
 
@@ -173,6 +173,22 @@ void SimulationController::setDefaultFeedRate(double value) {
 SimulationStatus SimulationController::getStatus() const { return status; }
 const AxisPosition& SimulationController::getPosition() const { return position; }
 std::size_t SimulationController::getCommandIndex() const { return commandIndex; }
+
+double SimulationController::getCommandProgress() const {
+	if (toolpath == nullptr || toolpath->empty()) {
+		return 0.0;
+	}
+	if (status == SimulationStatus::Finished || commandIndex >= toolpath->size()) {
+		return 1.0;
+	}
+
+	const double duration = MotionInterpolator::durationSeconds(
+		toolpath->getCommand(commandIndex), rapidFeedRate, defaultFeedRate);
+	if (duration <= 0.0) {
+		return 0.0;
+	}
+	return std::max(0.0, std::min(commandElapsedSeconds / duration, 1.0));
+}
 
 int SimulationController::getSourceLine() const {
 	if (toolpath == nullptr || toolpath->empty()) {

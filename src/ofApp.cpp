@@ -298,6 +298,82 @@ void ofApp::jumpSimulationToEditorLine(int editorLine){
 }
 
 //--------------------------------------------------------------
+void ofApp::stepSimulationLine(int direction){
+	if (direction == 0 || currentToolpath.empty() || toolpathEditorLines.empty()) {
+		return;
+	}
+
+	std::vector<std::size_t> lineStarts;
+	std::vector<std::size_t> lineEnds;
+	int previousEditorLine = -1;
+	for (std::size_t commandIndex = 0; commandIndex < currentToolpath.size(); ++commandIndex) {
+		const nc::ToolpathCommand command = currentToolpath.getCommand(commandIndex);
+		const bool isMovement =
+			command.type == nc::MotionType::Rapid ||
+			command.type == nc::MotionType::Linear ||
+			command.type == nc::MotionType::ArcClockwise ||
+			command.type == nc::MotionType::ArcCounterClockwise;
+		if (!isMovement || commandIndex >= toolpathEditorLines.size()) {
+			continue;
+		}
+
+		const int editorLine = toolpathEditorLines[commandIndex];
+		if (editorLine < 0) {
+			continue;
+		}
+		if (lineStarts.empty() || editorLine != previousEditorLine) {
+			lineStarts.push_back(commandIndex);
+			lineEnds.push_back(commandIndex);
+			previousEditorLine = editorLine;
+		} else {
+			lineEnds.back() = commandIndex;
+		}
+	}
+	if (lineStarts.empty()) {
+		return;
+	}
+
+	const std::size_t commandIndex = simulation.getCommandIndex();
+	std::size_t lineIndex = lineStarts.size() - 1;
+	if (commandIndex < currentToolpath.size()) {
+		for (std::size_t index = 0; index < lineStarts.size(); ++index) {
+			if (lineStarts[index] > commandIndex) {
+				lineIndex = index == 0 ? 0 : index - 1;
+				break;
+			}
+		}
+	}
+
+	std::size_t targetCommand = lineStarts[lineIndex];
+	double targetProgress = 0.0;
+	if (direction > 0) {
+		const bool currentLineFinished =
+			commandIndex >= currentToolpath.size() ||
+			(commandIndex == lineEnds[lineIndex] && simulation.getCommandProgress() >= 1.0);
+		if (currentLineFinished && lineIndex + 1 < lineStarts.size()) {
+			++lineIndex;
+		}
+		targetCommand = lineEnds[lineIndex];
+		targetProgress = 1.0;
+	} else {
+		const bool atCurrentLineStart =
+			commandIndex == lineStarts[lineIndex] && simulation.getCommandProgress() <= 0.0;
+		if (atCurrentLineStart && lineIndex > 0) {
+			--lineIndex;
+		}
+		targetCommand = lineStarts[lineIndex];
+	}
+
+	simulation.seekToCommand(targetCommand, targetProgress);
+	editorSimulationLine = toolpathEditorLines[targetCommand];
+	if (editorSimulationLine >= 0) {
+		const TextEditor::Coordinates position(editorSimulationLine, 0);
+		textEditor.SetCursorPosition(position);
+		textEditor.SetSelection(position, position);
+	}
+	statusMessage = direction > 0 ? "Bir satir ileri gidildi" : "Bir satir geri gidildi";
+}
+//--------------------------------------------------------------
 void ofApp::drawTextEditor(){
 	const ImGuiWindowFlags editorFlags =
 		ImGuiWindowFlags_HorizontalScrollbar |
@@ -556,6 +632,10 @@ void ofApp::drawInterface(){
 	ImGui::EndChild();
 
 	ImGui::Separator();
+	if (ImGui::Button("<<")) {
+		stepSimulationLine(-1);
+	}
+	ImGui::SameLine();
 	if (ImGui::Button("Oynat")) {
 		const double speed = simulation.getSpeed();
 		simulation.setSpeed(speed == 0.0 ? 1.0 : std::abs(speed));
@@ -568,6 +648,10 @@ void ofApp::drawInterface(){
 	ImGui::SameLine();
 	if (ImGui::Button("Durdur")) {
 		simulation.stop();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(">>")) {
+		stepSimulationLine(1);
 	}
 	ImGui::SameLine();
 	int speedStep = static_cast<int>(simulation.getSpeed());

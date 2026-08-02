@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "toolpath/Toolpath.h"
 
@@ -31,6 +31,7 @@ public:
 	SimulationStatus getStatus() const;
 	const AxisPosition& getPosition() const;
 	std::size_t getCommandIndex() const;
+	double getCommandProgress() const;
 	int getSourceLine() const;
 	double getProgress() const;
 
