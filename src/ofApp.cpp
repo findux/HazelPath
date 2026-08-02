@@ -131,7 +131,7 @@ void ofApp::setup(){
 		"G21\n"
 		"G90\n"
 		"G0 X0 Y0 Z10\n"
-		"G1 X50 Y50 Z10 F800\n"
+		"G0 X50 Y50 Z10 F800\n"
 		"G1 Z-5\n"
 		"G1 X150\n"
 		"G1 Y150\n"
@@ -451,7 +451,9 @@ void ofApp::rebuildToolpathMesh(){
 	for (std::size_t index = 0; index < currentToolpath.size(); ++index) {
 		const nc::ToolpathCommand command = currentToolpath.getCommand(index);
 		if (command.type == nc::MotionType::Rapid) {
-			addSegment(command.start, command.end, ofFloatColor(0.20f, 0.60f, 1.0f));
+			if (showRapidToolpaths) {
+				addSegment(command.start, command.end, ofFloatColor(0.58f, 0.60f, 0.64f));
+			}
 		} else if (command.type == nc::MotionType::Linear) {
 			addSegment(command.start, command.end, ofFloatColor(0.20f, 1.0f, 0.35f));
 		} else if (command.type == nc::MotionType::ArcClockwise ||
@@ -584,6 +586,12 @@ void ofApp::drawInterface(){
 				resetCamera();
 
 				statusMessage = "Kamera sifirlandi";
+			}
+			if (ImGui::MenuItem("Rapid takim yollarini goster", nullptr, &showRapidToolpaths)) {
+				rebuildToolpathMesh();
+				statusMessage = showRapidToolpaths
+					? "Rapid takim yollari gosteriliyor"
+					: "Rapid takim yollari gizlendi";
 			}
 			ImGui::EndMenu();
 		}

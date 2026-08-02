@@ -53,6 +53,7 @@ class ofApp : public ofBaseApp{
 		std::vector<int> toolpathEditorLines;
 
 		float splitRatio = 0.2f;
+		bool showRapidToolpaths = true;
 		int editorSimulationLine = -1;
 		std::string statusMessage = "Hazir";
 };
