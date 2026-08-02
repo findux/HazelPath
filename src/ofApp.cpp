@@ -304,9 +304,16 @@ void ofApp::drawTextEditor(){
 		ImGuiWindowFlags_AlwaysHorizontalScrollbar |
 		ImGuiWindowFlags_NoMove;
 	ImGui::BeginChild("##GCodeEditor", ImVec2(0.0f, 0.0f), false, editorFlags);
+	const ImVec2 editorMin = ImGui::GetWindowPos();
+	const ImVec2 editorSize = ImGui::GetWindowSize();
+	const ImVec2 editorMax(editorMin.x + editorSize.x, editorMin.y + editorSize.y);
 	textEditor.Render("##GCodeEditorContent");
+	const ImVec2 mousePosition = ImGui::GetIO().MousePos;
+	const bool mouseInsideEditor =
+		mousePosition.x >= editorMin.x && mousePosition.x < editorMax.x &&
+		mousePosition.y >= editorMin.y && mousePosition.y < editorMax.y;
 	if (simulation.getStatus() != nc::SimulationStatus::Playing &&
-		ImGui::IsWindowHovered() &&
+		mouseInsideEditor &&
 		ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 		jumpSimulationToEditorLine(textEditor.GetCursorPosition().mLine);
 	}
