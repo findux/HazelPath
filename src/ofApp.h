@@ -9,6 +9,8 @@
 #include "simulation/SimulationController.h"
 #include "machine/Machine.h"
 
+#include <future>
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -31,6 +33,7 @@ class ofApp : public ofBaseApp{
 	private:
 		void resetCamera();
 		void interpretEditorText();
+		void updateInterpretation();
 		void rebuildToolpathMesh();
 		void rebuildToolpathEditorLines();
 		void syncEditorToSimulation();
@@ -51,9 +54,11 @@ class ofApp : public ofBaseApp{
 		ofFbo sceneFbo;
 		ofMesh toolpathMesh;
 		std::vector<int> toolpathEditorLines;
+		std::future<nc::NcImportResult> importFuture;
 
 		float splitRatio = 0.2f;
 		bool showRapidToolpaths = true;
+		bool importInProgress = false;
 		int editorSimulationLine = -1;
 		std::string statusMessage = "Hazir";
 };

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <chrono>
 #include <fstream>
 
 namespace {
@@ -174,8 +175,45 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::interpretEditorText(){
-	const nc::NcImportResult importResult = nc::importNcWithMachineScript(
-		scripting.state(), currentMachine.getImportScriptPath(), textEditor.GetText());
+	if (importInProgress) {
+		return;
+	}
+
+	const std::string scriptPath = currentMachine.getImportScriptPath();
+	const std::string ncText = textEditor.GetText();
+	importInProgress = true;
+	textEditor.SetReadOnly(true);
+	statusMessage = "NC yorumlaniyor...";
+
+	try {
+		importFuture = std::async(std::launch::async, [this, scriptPath, ncText]() {
+			return nc::importNcWithMachineScript(
+				scripting.state(), scriptPath, ncText);
+		});
+	} catch (const std::exception& error) {
+		importInProgress = false;
+		textEditor.SetReadOnly(false);
+		statusMessage = "Yorumlama baslatilamadi: " + std::string(error.what());
+		ofLogError("NC Import") << statusMessage;
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::updateInterpretation(){
+	if (!importInProgress || !importFuture.valid() ||
+		importFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+		return;
+	}
+
+	nc::NcImportResult importResult;
+	try {
+		importResult = importFuture.get();
+	} catch (const std::exception& error) {
+		importResult.error = "NC yorumlama hatasi: " + std::string(error.what());
+	} catch (...) {
+		importResult.error = "NC yorumlama sirasinda bilinmeyen hata";
+	}
+
 	if (importResult.success) {
 		currentToolpath = importResult.toolpath;
 		rebuildToolpathEditorLines();
@@ -193,6 +231,8 @@ void ofApp::interpretEditorText(){
 		statusMessage = importResult.error;
 		ofLogError("NC Import") << importResult.error;
 	}
+	textEditor.SetReadOnly(false);
+	importInProgress = false;
 }
 //--------------------------------------------------------------
 void ofApp::rebuildToolpathEditorLines(){
@@ -485,6 +525,7 @@ void ofApp::resetCamera(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	updateInterpretation();
 	simulation.update(ofGetLastFrameTime());
 
 	const nc::AxisPosition& position = simulation.getPosition();
@@ -617,8 +658,15 @@ void ofApp::drawInterface(){
 	ImGui::BeginChild("##EditorPanel", ImVec2(leftWidth, panelsHeight), true);
 	ImGui::TextUnformatted("G-code Editor");
 	ImGui::SameLine();
+	ImGui::BeginDisabled(importInProgress);
 	if (ImGui::Button("Yeniden Yorumla")) {
 		interpretEditorText();
+	}
+	ImGui::EndDisabled();
+	if (importInProgress) {
+		const float phase = std::fmod(ofGetElapsedTimef() * 0.8f, 2.0f);
+		const float progress = phase <= 1.0f ? phase : 2.0f - phase;
+		ImGui::ProgressBar(progress, ImVec2(-1.0f, 0.0f), "NC yorumlaniyor...");
 	}
 	ImGui::Separator();
 	drawTextEditor();
