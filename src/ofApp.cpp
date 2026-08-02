@@ -102,6 +102,21 @@ std::string canonicalGprBlock(const std::string& line) {
 	}
 }
 
+double simulationSpeedFromSlider(float sliderValue) {
+	const double magnitude = std::abs(static_cast<double>(sliderValue));
+	const double speedMagnitude = magnitude <= 1.0
+		? magnitude
+		: 1.0 + (std::min(magnitude, 2.0) - 1.0) * 7.0;
+	return std::copysign(speedMagnitude, static_cast<double>(sliderValue));
+}
+
+float simulationSliderFromSpeed(double speed) {
+	const double magnitude = std::abs(speed);
+	const double sliderMagnitude = magnitude <= 1.0
+		? magnitude
+		: 1.0 + (std::min(magnitude, 8.0) - 1.0) / 7.0;
+	return static_cast<float>(std::copysign(sliderMagnitude, speed));
+}
 } // namespace
 
 //--------------------------------------------------------------
@@ -654,11 +669,12 @@ void ofApp::drawInterface(){
 		stepSimulationLine(1);
 	}
 	ImGui::SameLine();
-	int speedStep = static_cast<int>(simulation.getSpeed());
-	ImGui::SetNextItemWidth(120.0f);
-	if (ImGui::SliderInt("Hiz##SimulationSpeed", &speedStep, -8, 8, "%dx")) {
-		simulation.setSpeed(static_cast<double>(speedStep));
-		if (speedStep == 0) {
+	float speedSlider = simulationSliderFromSpeed(simulation.getSpeed());
+	ImGui::SetNextItemWidth(180.0f);
+	if (ImGui::SliderFloat("Hiz##SimulationSpeed", &speedSlider, -2.0f, 2.0f, "%.2f")) {
+		const double speed = simulationSpeedFromSlider(speedSlider);
+		simulation.setSpeed(speed);
+		if (speed == 0.0) {
 			simulation.pause();
 		} else {
 			simulation.play();
