@@ -578,6 +578,20 @@ void ofApp::drawScene(int width, int height){
 	camera.end();
 
 	ofDisableDepthTest();
+	const nc::AxisPosition& toolPosition = simulation.getPosition();
+	const std::string unitLabel = currentToolpath.units == nc::Units::Inches ? "in" : "mm";
+	const std::string coordinateText =
+		"Takim Ucu [" + unitLabel + "]\n" +
+		"X  " + ofToString(toolPosition.x, 3) + "\n" +
+		"Y  " + ofToString(toolPosition.y, 3) + "\n" +
+		"Z  " + ofToString(toolPosition.z, 3);
+	ofPushStyle();
+	ofEnableAlphaBlending();
+	ofSetColor(10, 12, 16, 210);
+	ofDrawRectangle(10.0f, 10.0f, 145.0f, 72.0f);
+	ofSetColor(235, 238, 242);
+	ofDrawBitmapString(coordinateText, 18.0f, 27.0f);
+	ofPopStyle();
 	sceneFbo.end();
 }
 
