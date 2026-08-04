@@ -55,10 +55,12 @@ class ofApp : public ofBaseApp{
 		ofMesh toolpathMesh;
 		std::vector<int> toolpathEditorLines;
 		std::future<nc::NcImportResult> importFuture;
+		ofRectangle viewCubeRect;
 
 		float splitRatio = 0.2f;
 		bool showRapidToolpaths = true;
 		bool importInProgress = false;
+		bool viewCubeUsing = false;
 		int editorSimulationLine = -1;
 		std::string statusMessage = "Hazir";
 };

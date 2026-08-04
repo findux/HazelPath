@@ -3,6 +3,7 @@
 #include "simulation/MotionInterpolator.h"
 
 #include "ofxGpr.h"
+#include "ofxImGuizmo.h"
 
 #include <algorithm>
 #include <cctype>
@@ -10,7 +11,58 @@
 #include <chrono>
 #include <fstream>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 namespace {
+
+bool drawZUpViewCube(ofEasyCam& camera, const ofRectangle& rectangle) {
+	const glm::mat4 appToGizmo = glm::rotate(
+		glm::mat4(1.0f),
+		glm::radians(-90.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f));
+	const glm::mat4 cameraTransformWithoutScale =
+		glm::translate(glm::mat4(1.0f), camera.getGlobalPosition()) *
+		glm::mat4_cast(camera.getGlobalOrientation());
+	glm::mat4 gizmoView =
+		glm::inverse(cameraTransformWithoutScale) * glm::inverse(appToGizmo);
+	const glm::mat4 previousView = gizmoView;
+	const ofColor backgroundColor(20, 22, 28, 180);
+	const ImU32 packedBackground =
+		(static_cast<ImU32>(backgroundColor.a) << 24) | backgroundColor.getHex();
+
+	ImGuizmo::ViewManipulate(
+		&gizmoView[0][0],
+		camera.getDistance(),
+		ImVec2(rectangle.x, rectangle.y),
+		ImVec2(rectangle.width, rectangle.height),
+		packedBackground);
+
+	bool changed = false;
+	for (int column = 0; column < 4 && !changed; ++column) {
+		for (int row = 0; row < 4; ++row) {
+			if (std::abs(gizmoView[column][row] - previousView[column][row]) > 0.000001f) {
+				changed = true;
+				break;
+			}
+		}
+	}
+	if (!changed) {
+		return false;
+	}
+
+	const glm::mat4 cameraTransform = glm::inverse(gizmoView * appToGizmo);
+	const glm::vec3 position = glm::vec3(cameraTransform[3]);
+	const glm::vec3 backDirection = glm::normalize(glm::vec3(cameraTransform[2]));
+	const glm::vec3 zUp(0.0f, 0.0f, 1.0f);
+	const glm::vec3 viewUp = std::abs(glm::dot(backDirection, zUp)) > 0.999f
+		? glm::vec3(0.0f, 1.0f, 0.0f)
+		: zUp;
+	const glm::vec3 target = position - backDirection * camera.getDistance();
+	camera.setGlobalPosition(position);
+	camera.setTarget(target);
+	camera.lookAt(target, viewUp);
+	return true;
+}
 
 bool tokenizeGCodeLine(
 	const char* begin,
@@ -546,6 +598,14 @@ void ofApp::drawScene(int width, int height){
 	width = std::max(width, 1);
 	height = std::max(height, 1);
 
+	const bool viewCubeCapturesMouse =
+		viewCubeUsing || viewCubeRect.inside(ofGetMouseX(), ofGetMouseY());
+	if (viewCubeCapturesMouse && camera.getMouseInputEnabled()) {
+		camera.disableMouseInput();
+	} else if (!viewCubeCapturesMouse && !camera.getMouseInputEnabled()) {
+		camera.enableMouseInput();
+	}
+
 	if (!sceneFbo.isAllocated() ||
 		static_cast<int>(sceneFbo.getWidth()) != width ||
 		static_cast<int>(sceneFbo.getHeight()) != height) {
@@ -725,6 +785,27 @@ void ofApp::drawInterface(){
 		sceneMin.y,
 		sceneMax.x - sceneMin.x,
 		sceneMax.y - sceneMin.y));
+
+	constexpr float ViewCubeSize = 112.0f;
+	constexpr float ViewCubeMargin = 8.0f;
+	const float availableCubeSize = std::min(
+		sceneMax.x - sceneMin.x - ViewCubeMargin * 2.0f,
+		sceneMax.y - sceneMin.y - ViewCubeMargin * 2.0f);
+	const float cubeSize = std::min(ViewCubeSize, availableCubeSize);
+	if (cubeSize >= 48.0f) {
+		viewCubeRect.set(
+			sceneMax.x - cubeSize - ViewCubeMargin,
+			sceneMin.y + ViewCubeMargin,
+			cubeSize,
+			cubeSize);
+		ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+		ImGuizmo::SetOrthographic(camera.getOrtho());
+		drawZUpViewCube(camera, viewCubeRect);
+		viewCubeUsing = ImGuizmo::IsUsingViewManipulate();
+	} else {
+		viewCubeRect.set(0.0f, 0.0f, 0.0f, 0.0f);
+		viewCubeUsing = false;
+	}
 	ImGui::EndChild();
 
 	ImGui::Separator();
@@ -789,6 +870,7 @@ void ofApp::draw(){
 	drawScene(sceneWidth, sceneHeight);
 
 	gui.begin();
+	ImGuizmo::BeginFrame();
 	drawInterface();
 	gui.end();
 }
