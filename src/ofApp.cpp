@@ -700,6 +700,17 @@ void ofApp::drawInterface(){
 	ImGui::BeginChild("##ScenePanel", ImVec2(0.0f, panelsHeight), true,
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	ImGui::TextUnformatted("3B Sahne");
+	ImGui::SameLine();
+	const bool cameraIsOrtho = camera.getOrtho();
+	if (ImGui::Button(cameraIsOrtho ? "Perspektif" : "Ortho")) {
+		if (cameraIsOrtho) {
+			camera.disableOrtho();
+			statusMessage = "Kamera perspektif modunda";
+		} else {
+			camera.enableOrtho();
+			statusMessage = "Kamera ortho modunda";
+		}
+	}
 	ImGui::Separator();
 	const ImVec2 imageSize = ImGui::GetContentRegionAvail();
 	const ImTextureID textureId = (ImTextureID)(uintptr_t)sceneFbo.getTexture().getTextureData().textureID;
