@@ -407,29 +407,30 @@ MeasurementState::SnapPoint MeasurementState::findSnap(
 		if (!screen.visible) {
 			continue;
 		}
-		const glm::vec2 delta = screen.end - screen.start;
-		const float lengthSquared = glm::dot(delta, delta);
-		const float segmentT = lengthSquared > 0.000001f
-			? ofClamp(glm::dot(mouse - screen.start, delta) / lengthSquared, 0.0f, 1.0f)
-			: 0.0f;
-		const glm::vec2 closest = screen.start + delta * segmentT;
-		const float distance = glm::distance(mouse, closest);
-		if (distance >= result.pixelDistance || distance > SnapDistancePixels) {
-			continue;
-		}
 
 		const PathSegment& path = pathSegments[index];
-		const double commandT = path.commandTStart +
-			(path.commandTEnd - path.commandTStart) * segmentT;
-		const nc::ToolpathCommand command = context.toolpath->getCommand(path.commandIndex);
-		const nc::AxisPosition model = nc::MotionInterpolator::sample(command, commandT);
-		result.valid = true;
-		result.modelPoint = model;
-		result.worldPoint = worldPoint(model, unitScale);
-		result.screenPoint = closest;
-		result.commandIndex = path.commandIndex;
-		result.commandT = commandT;
-		result.pixelDistance = distance;
+		const auto testEndpoint = [&](const glm::vec2& endpoint, double commandT) {
+			const float distance = glm::distance(mouse, endpoint);
+			if (distance >= result.pixelDistance || distance > SnapDistancePixels) {
+				return;
+			}
+			const nc::ToolpathCommand command = context.toolpath->getCommand(path.commandIndex);
+			const nc::AxisPosition model = nc::MotionInterpolator::sample(command, commandT);
+			result.valid = true;
+			result.modelPoint = model;
+			result.worldPoint = worldPoint(model, unitScale);
+			result.screenPoint = endpoint;
+			result.commandIndex = path.commandIndex;
+			result.commandT = commandT;
+			result.pixelDistance = distance;
+		};
+
+		if (path.commandTStart <= 0.0) {
+			testEndpoint(screen.start, 0.0);
+		}
+		if (path.commandTEnd >= 1.0) {
+			testEndpoint(screen.end, 1.0);
+		}
 	}
 	return result;
 }
