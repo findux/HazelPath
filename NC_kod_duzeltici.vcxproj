@@ -63,6 +63,12 @@
 		<Import Project="..\..\..\libs\openFrameworksCompiled\project\vs\openFrameworksDebug.props" />
 	</ImportGroup>
 	<PropertyGroup Label="UserMacros" />
+	<ItemDefinitionGroup>
+		<PreBuildEvent>
+			<Command>powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(ProjectDir)scripts\generate_app_icons.ps1&quot;</Command>
+			<Message>Generating HazelPath application icons...</Message>
+		</PreBuildEvent>
+	</ItemDefinitionGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64' or '$(Configuration)|$(Platform)'=='Debug|ARM64' or '$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
 		<OutDir>bin\</OutDir>
 		<IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
@@ -389,6 +395,9 @@
 		<ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
 			<Project>{5837595d-aca9-485c-8e76-729040ce4b0b}</Project>
 		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="scripts\generate_app_icons.ps1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ResourceCompile Include="icon.rc">

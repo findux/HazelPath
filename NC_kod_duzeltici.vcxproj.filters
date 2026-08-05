@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
 		<ClCompile Include="src\ofApp.cpp">
@@ -224,6 +224,9 @@
 	<ItemGroup>
 		<Filter Include="src">
 			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="scripts">
+			<UniqueIdentifier>{C43824AC-7F8D-498E-A0D7-68814682A84E}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="src\machine">
 			<UniqueIdentifier>{8A48A4C9-95D0-45A7-AF36-A3D5B8652B01}</UniqueIdentifier>
@@ -581,6 +584,11 @@
 		<ClInclude Include="..\..\..\addons\ofxSol2\libs\sol2\include\sol\sol.hpp">
 			<Filter>addons\ofxSol2\libs\sol2\include\sol</Filter>
 		</ClInclude>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="scripts\generate_app_icons.ps1">
+			<Filter>scripts</Filter>
+		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<ResourceCompile Include="icon.rc" />
