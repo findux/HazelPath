@@ -141,34 +141,57 @@ const char* MeasurementState::id() const {
 }
 
 bool MeasurementState::drawToolbarButton(bool active) {
+	ensureToolbarIcon();
+
 	const ImVec2 size(32.0f, 24.0f);
 	const bool clicked = ImGui::InvisibleButton("##Caliper", size);
 	const bool hovered = ImGui::IsItemHovered();
 	const ImVec2 minimum = ImGui::GetItemRectMin();
 	const ImVec2 maximum = ImGui::GetItemRectMax();
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	const ImU32 background = ImGui::GetColorU32(active
-		? ImGuiCol_ButtonActive
-		: (hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button));
+	const ImU32 background = active
+		? IM_COL32(155, 195, 230, 255)
+		: (hovered ? IM_COL32(230, 234, 238, 255) : IM_COL32(205, 211, 217, 255));
 	drawList->AddRectFilled(minimum, maximum, background, 3.0f);
 	drawList->AddRect(minimum, maximum, ImGui::GetColorU32(ImGuiCol_Border), 3.0f);
 
-	const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text);
-	const float left = minimum.x + 5.0f;
-	const float right = maximum.x - 5.0f;
-	const float top = minimum.y + 6.0f;
-	const float bottom = maximum.y - 5.0f;
-	drawList->AddLine(ImVec2(left, top), ImVec2(right, top), color, 1.8f);
-	drawList->AddLine(ImVec2(left + 2.0f, top), ImVec2(left + 2.0f, bottom), color, 1.8f);
-	drawList->AddLine(ImVec2(left + 2.0f, bottom), ImVec2(left + 7.0f, bottom), color, 1.8f);
-	drawList->AddRect(ImVec2(right - 8.0f, top - 2.0f), ImVec2(right - 3.0f, top + 3.0f), color);
-	drawList->AddLine(ImVec2(right - 5.5f, top + 3.0f), ImVec2(right - 5.5f, bottom - 2.0f), color, 1.8f);
-	drawList->AddLine(ImVec2(right - 5.5f, bottom - 2.0f), ImVec2(right, bottom - 2.0f), color, 1.8f);
+	if (toolbarIcon.isAllocated()) {
+		const float availableWidth = size.x - 6.0f;
+		const float availableHeight = size.y - 4.0f;
+		const float aspect = toolbarIcon.getWidth() / toolbarIcon.getHeight();
+		const float imageWidth = std::min(availableWidth, availableHeight * aspect);
+		const float imageHeight = imageWidth / aspect;
+		const ImVec2 imageMinimum(
+			minimum.x + (size.x - imageWidth) * 0.5f,
+			minimum.y + (size.y - imageHeight) * 0.5f);
+		const ImVec2 imageMaximum(imageMinimum.x + imageWidth, imageMinimum.y + imageHeight);
+		const ImTextureID textureId =
+			(ImTextureID)(uintptr_t)toolbarIcon.getTexture().getTextureData().textureID;
+		drawList->AddImage(textureId, imageMinimum, imageMaximum);
+	} else {
+		drawList->AddText(
+			ImVec2(minimum.x + 10.0f, minimum.y + 4.0f),
+			IM_COL32(20, 20, 20, 255),
+			"M");
+	}
 
 	if (hovered) {
 		ImGui::SetTooltip("Olcum araci");
 	}
 	return clicked;
+}
+
+void MeasurementState::ensureToolbarIcon() {
+	if (toolbarIconLoadAttempted) {
+		return;
+	}
+	toolbarIconLoadAttempted = true;
+	const std::string iconPath = ofFilePath::join(
+		ofFilePath::getCurrentExeDir(),
+		"../res/kumpas.png");
+	if (!toolbarIcon.load(iconPath)) {
+		ofLogWarning("MeasurementState") << "Kumpas ikonu yuklenemedi: " << iconPath;
+	}
 }
 
 void MeasurementState::onEnter(const SceneStateContext& context) {

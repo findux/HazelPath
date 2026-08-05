@@ -60,6 +60,7 @@ private:
 	void drawMotionHighlight(const SceneStateContext& context, std::size_t commandIndex) const;
 	void drawInfoPanel(const SceneStateContext& context, ImDrawList* drawList) const;
 	std::vector<std::string> infoLines(const SceneStateContext& context) const;
+	void ensureToolbarIcon();
 
 	std::vector<PathSegment> pathSegments;
 	std::vector<ScreenSegment> screenSegments;
@@ -74,5 +75,7 @@ private:
 	bool projectionValid = false;
 	bool cachedRapidVisible = true;
 	bool exitRequested = false;
+	bool toolbarIconLoadAttempted = false;
+	ofImage toolbarIcon;
 	float unitScale = 1.0f;
 };
