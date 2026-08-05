@@ -68,6 +68,7 @@ private:
 	std::optional<SnapPoint> secondPoint;
 	SnapPoint hoverPoint;
 	glm::vec2 mousePosition{0.0f};
+	glm::vec2 mousePressPosition{0.0f};
 	glm::mat4 cachedViewProjection{1.0f};
 	ofRectangle cachedScreenRect;
 	ofRectangle cachedRenderViewport;
@@ -76,6 +77,8 @@ private:
 	bool cachedRapidVisible = true;
 	bool exitRequested = false;
 	bool toolbarIconLoadAttempted = false;
+	bool mouseDraggedSincePress = false;
+	int pressedMouseButton = -1;
 	ofImage toolbarIcon;
 	float unitScale = 1.0f;
 };

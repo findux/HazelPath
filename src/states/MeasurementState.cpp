@@ -9,6 +9,7 @@
 namespace {
 
 constexpr float SnapDistancePixels = 14.0f;
+constexpr float ClickDragThresholdPixels = 4.0f;
 constexpr int ArcSampleCount = 48;
 constexpr double TwoPi = 6.28318530717958647692;
 
@@ -196,6 +197,8 @@ void MeasurementState::ensureToolbarIcon() {
 
 void MeasurementState::onEnter(const SceneStateContext& context) {
 	exitRequested = false;
+	pressedMouseButton = -1;
+	mouseDraggedSincePress = false;
 	clearSelection();
 	ensureGeometry(context);
 }
@@ -204,6 +207,8 @@ void MeasurementState::onExit(const SceneStateContext&) {
 	clearSelection();
 	hoverPoint = {};
 	exitRequested = false;
+	pressedMouseButton = -1;
+	mouseDraggedSincePress = false;
 }
 
 void MeasurementState::onToolpathChanged(const SceneStateContext&) {
@@ -278,15 +283,36 @@ bool MeasurementState::mouseMoved(const SceneStateContext& context, int x, int y
 	return context.screenRect.inside(x, y);
 }
 
-bool MeasurementState::mouseDragged(const SceneStateContext& context, int x, int y, int) {
+bool MeasurementState::mouseDragged(const SceneStateContext& context, int x, int y, int button) {
 	mousePosition = glm::vec2(x, y);
+	if (button == pressedMouseButton &&
+		glm::distance(mousePosition, mousePressPosition) > ClickDragThresholdPixels) {
+		mouseDraggedSincePress = true;
+	}
 	refreshHover(context);
-	return context.screenRect.inside(x, y);
+	return false;
 }
 
 bool MeasurementState::mousePressed(const SceneStateContext& context, int x, int y, int button) {
 	mousePosition = glm::vec2(x, y);
 	if (!context.screenRect.inside(x, y)) {
+		return false;
+	}
+	if (button == OF_MOUSE_BUTTON_LEFT || button == OF_MOUSE_BUTTON_RIGHT) {
+		pressedMouseButton = button;
+		mousePressPosition = mousePosition;
+		mouseDraggedSincePress = false;
+	}
+	return false;
+}
+
+bool MeasurementState::mouseReleased(const SceneStateContext& context, int x, int y, int button) {
+	mousePosition = glm::vec2(x, y);
+	const bool isClick = button == pressedMouseButton && !mouseDraggedSincePress &&
+		context.screenRect.inside(x, y);
+	pressedMouseButton = -1;
+	mouseDraggedSincePress = false;
+	if (!isClick) {
 		return false;
 	}
 	if (button == OF_MOUSE_BUTTON_RIGHT) {
@@ -309,12 +335,8 @@ bool MeasurementState::mousePressed(const SceneStateContext& context, int x, int
 	return true;
 }
 
-bool MeasurementState::mouseReleased(const SceneStateContext& context, int x, int y, int) {
-	return context.screenRect.inside(x, y);
-}
-
-bool MeasurementState::blocksCameraInput(const SceneStateContext& context) const {
-	return context.screenRect.inside(ofGetMouseX(), ofGetMouseY());
+bool MeasurementState::blocksCameraInput(const SceneStateContext&) const {
+	return false;
 }
 
 bool MeasurementState::requestsExit() const {
