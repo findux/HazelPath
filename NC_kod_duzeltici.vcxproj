@@ -227,6 +227,8 @@
 		<ClCompile Include="src\main.cpp" />
 		<ClCompile Include="src\ofApp.cpp" />
 		<ClCompile Include="src\machine\Machine.cpp" />
+		<ClCompile Include="src\states\MeasurementState.cpp" />
+		<ClCompile Include="src\states\SceneStateManager.cpp" />
 		<ClCompile Include="src\scripting\GlmBindings.cpp" />
 		<ClCompile Include="src\scripting\LuaBindings.cpp" />
 		<ClCompile Include="src\scripting\MachineBindings.cpp" />
@@ -299,6 +301,9 @@
 	<ItemGroup>
 		<ClInclude Include="src\ofApp.h" />
 		<ClInclude Include="src\machine\Machine.h" />
+		<ClInclude Include="src\states\MeasurementState.h" />
+		<ClInclude Include="src\states\SceneState.h" />
+		<ClInclude Include="src\states\SceneStateManager.h" />
 		<ClInclude Include="src\scripting\LuaBindings.h" />
 		<ClInclude Include="src\scripting\NcImporter.h" />
 		<ClInclude Include="src\simulation\MotionInterpolator.h" />

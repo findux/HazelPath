@@ -1,6 +1,7 @@
 #include "ofApp.h"
 
 #include "simulation/MotionInterpolator.h"
+#include "states/MeasurementState.h"
 
 #include "ofxGpr.h"
 #include "ofxImGuizmo.h"
@@ -178,6 +179,8 @@ void ofApp::setup(){
 	ofDisableArbTex(); 
 
 	gui.setup();
+	sceneStates.setResources(&camera, &currentToolpath);
+	sceneStates.addState(std::make_unique<MeasurementState>());
 
 	const std::string initialNc =
 		"; NC programi\n"
@@ -268,6 +271,7 @@ void ofApp::updateInterpretation(){
 
 	if (importResult.success) {
 		currentToolpath = importResult.toolpath;
+		sceneStates.notifyToolpathChanged();
 		rebuildToolpathEditorLines();
 		rebuildToolpathMesh();
 		simulation.setToolpath(&currentToolpath);
@@ -578,6 +582,7 @@ void ofApp::resetCamera(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	updateInterpretation();
+	sceneStates.update();
 	simulation.update(ofGetLastFrameTime());
 
 	const nc::AxisPosition& position = simulation.getPosition();
@@ -597,9 +602,12 @@ void ofApp::update(){
 void ofApp::drawScene(int width, int height){
 	width = std::max(width, 1);
 	height = std::max(height, 1);
+	sceneStates.setRenderViewport(ofRectangle(0.0f, 0.0f, width, height));
+	sceneStates.setRapidVisible(showRapidToolpaths);
 
 	const bool viewCubeCapturesMouse =
-		viewCubeUsing || viewCubeRect.inside(ofGetMouseX(), ofGetMouseY());
+		viewCubeUsing || viewCubeRect.inside(ofGetMouseX(), ofGetMouseY()) ||
+		sceneStates.blocksCameraInput();
 	if (viewCubeCapturesMouse && camera.getMouseInputEnabled()) {
 		camera.disableMouseInput();
 	} else if (!viewCubeCapturesMouse && !camera.getMouseInputEnabled()) {
@@ -635,6 +643,7 @@ void ofApp::drawScene(int width, int height){
 	ofSetColor(255, 140, 40);
 	//ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
 	currentMachine.drawLinks();
+	sceneStates.drawWorld();
 	camera.end();
 
 	ofDisableDepthTest();
@@ -771,6 +780,8 @@ void ofApp::drawInterface(){
 			statusMessage = "Kamera ortho modunda";
 		}
 	}
+	ImGui::SameLine();
+	sceneStates.drawToolbar();
 	ImGui::Separator();
 	const ImVec2 imageSize = ImGui::GetContentRegionAvail();
 	const ImTextureID textureId = (ImTextureID)(uintptr_t)sceneFbo.getTexture().getTextureData().textureID;
@@ -785,6 +796,13 @@ void ofApp::drawInterface(){
 		sceneMin.y,
 		sceneMax.x - sceneMin.x,
 		sceneMax.y - sceneMin.y));
+	sceneStates.setScreenRect(ofRectangle(
+		sceneMin.x,
+		sceneMin.y,
+		sceneMax.x - sceneMin.x,
+		sceneMax.y - sceneMin.y));
+	sceneStates.setRapidVisible(showRapidToolpaths);
+	sceneStates.drawOverlay();
 
 	constexpr float ViewCubeSize = 112.0f;
 	constexpr float ViewCubeMargin = 8.0f;
@@ -877,6 +895,9 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+	if (sceneStates.keyPressed(key)) {
+		return;
+	}
 	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
 		(key == 's' || key == 'S')) {
 		saveEditorText();
@@ -885,11 +906,11 @@ void ofApp::keyPressed(int key){
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){}
-void ofApp::mouseMoved(int x, int y){}
-void ofApp::mouseDragged(int x, int y, int button){}
-void ofApp::mousePressed(int x, int y, int button){}
-void ofApp::mouseReleased(int x, int y, int button){}
+void ofApp::keyReleased(int key){ sceneStates.keyReleased(key); }
+void ofApp::mouseMoved(int x, int y){ sceneStates.mouseMoved(x, y); }
+void ofApp::mouseDragged(int x, int y, int button){ sceneStates.mouseDragged(x, y, button); }
+void ofApp::mousePressed(int x, int y, int button){ sceneStates.mousePressed(x, y, button); }
+void ofApp::mouseReleased(int x, int y, int button){ sceneStates.mouseReleased(x, y, button); }
 void ofApp::mouseEntered(int x, int y){}
 void ofApp::mouseExited(int x, int y){}
 void ofApp::windowResized(int w, int h){}

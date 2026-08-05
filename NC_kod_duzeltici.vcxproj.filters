@@ -10,6 +10,12 @@
 		<ClCompile Include="src\machine\Machine.cpp">
 			<Filter>src\machine</Filter>
 		</ClCompile>
+		<ClCompile Include="src\states\MeasurementState.cpp">
+			<Filter>src\states</Filter>
+		</ClCompile>
+		<ClCompile Include="src\states\SceneStateManager.cpp">
+			<Filter>src\states</Filter>
+		</ClCompile>
 		<ClCompile Include="src\scripting\GlmBindings.cpp">
 			<Filter>src\scripting</Filter>
 		</ClCompile>
@@ -222,6 +228,9 @@
 		<Filter Include="src\machine">
 			<UniqueIdentifier>{8A48A4C9-95D0-45A7-AF36-A3D5B8652B01}</UniqueIdentifier>
 		</Filter>
+		<Filter Include="src\states">
+			<UniqueIdentifier>{7B7E5EAA-4E42-4B85-A586-A028C8A4D7D9}</UniqueIdentifier>
+		</Filter>
 		<Filter Include="src\scripting">
 			<UniqueIdentifier>{63607BA5-44FF-420A-8AAF-5F47B0974676}</UniqueIdentifier>
 		</Filter>
@@ -325,6 +334,15 @@
 		</ClInclude>
 		<ClInclude Include="src\machine\Machine.h">
 			<Filter>src\machine</Filter>
+		</ClInclude>
+		<ClInclude Include="src\states\MeasurementState.h">
+			<Filter>src\states</Filter>
+		</ClInclude>
+		<ClInclude Include="src\states\SceneState.h">
+			<Filter>src\states</Filter>
+		</ClInclude>
+		<ClInclude Include="src\states\SceneStateManager.h">
+			<Filter>src\states</Filter>
 		</ClInclude>
 		<ClInclude Include="src\scripting\LuaBindings.h">
 			<Filter>src\scripting</Filter>

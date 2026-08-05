@@ -8,6 +8,7 @@
 #include "scripting/NcImporter.h"
 #include "simulation/SimulationController.h"
 #include "machine/Machine.h"
+#include "states/SceneStateManager.h"
 
 #include <future>
 
@@ -50,6 +51,7 @@ class ofApp : public ofBaseApp{
 		nc::Toolpath currentToolpath;
 		nc::Machine currentMachine{"generic_3axis", "Generic 3-Axis Mill"};
 		nc::SimulationController simulation;
+		SceneStateManager sceneStates;
 		ofEasyCam camera;
 		ofFbo sceneFbo;
 		ofMesh toolpathMesh;
