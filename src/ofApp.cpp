@@ -771,7 +771,7 @@ void ofApp::drawInterface(){
 	ImGui::TextUnformatted("3B Sahne");
 	ImGui::SameLine();
 	const bool cameraIsOrtho = camera.getOrtho();
-	if (ImGui::Button(cameraIsOrtho ? "Perspektif" : "Ortho")) {
+	if (ImGui::Button(cameraIsOrtho ? "Perspektif" : "Ortho", ImVec2(0.0f, 24.0f))) {
 		if (cameraIsOrtho) {
 			camera.disableOrtho();
 			statusMessage = "Kamera perspektif modunda";
