@@ -109,6 +109,10 @@ void Toolpath::addSpindle(double speed, int sourceLine, const std::string& sourc
 }
 
 ToolpathCommand Toolpath::getCommand(std::size_t index) const {
+	return getCommandRef(index);
+}
+
+const ToolpathCommand& Toolpath::getCommandRef(std::size_t index) const {
 	if (index >= commands.size()) {
 		throw std::out_of_range("Toolpath command index out of range");
 	}

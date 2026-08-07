@@ -80,6 +80,7 @@ public:
 	void addSpindle(double speed, int sourceLine, const std::string& sourceText);
 
 	ToolpathCommand getCommand(std::size_t index) const;
+	const ToolpathCommand& getCommandRef(std::size_t index) const;
 
 	void setMetadata(const std::string& key, const std::string& value);
 	std::string getMetadata(const std::string& key) const;

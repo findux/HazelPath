@@ -54,7 +54,8 @@ class ofApp : public ofBaseApp{
 		SceneStateManager sceneStates;
 		ofEasyCam camera;
 		ofFbo sceneFbo;
-		ofMesh toolpathMesh;
+		ofVboMesh cuttingToolpathMesh;
+		ofVboMesh rapidToolpathMesh;
 		std::vector<int> toolpathEditorLines;
 		std::future<nc::NcImportResult> importFuture;
 		ofRectangle viewCubeRect;

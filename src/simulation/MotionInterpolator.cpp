@@ -172,6 +172,55 @@ AxisPosition MotionInterpolator::sample(const ToolpathCommand& command, double t
 	return result;
 }
 
+int MotionInterpolator::arcSegmentCount(
+	const ToolpathCommand& command,
+	double unitScale,
+	double chordTolerance) {
+	if (command.type != MotionType::ArcClockwise &&
+		command.type != MotionType::ArcCounterClockwise) {
+		return 1;
+	}
+
+	double startU = 0.0;
+	double startV = 0.0;
+	double startPerpendicular = 0.0;
+	double endU = 0.0;
+	double endV = 0.0;
+	double endPerpendicular = 0.0;
+	double centerU = 0.0;
+	double centerV = 0.0;
+	double centerPerpendicular = 0.0;
+	planeCoordinates(command.start, command.plane, startU, startV, startPerpendicular);
+	planeCoordinates(command.end, command.plane, endU, endV, endPerpendicular);
+	planeCoordinates(command.center, command.plane, centerU, centerV, centerPerpendicular);
+
+	constexpr int MinimumSegments = 2;
+	constexpr int MaximumSegments = 256;
+	constexpr double MaximumAnglePerSegment = 0.7853981633974483;
+	constexpr double MaximumSegmentLength = 8.0;
+
+	const double scale = std::max(std::abs(unitScale), 0.000001);
+	const double radius = std::hypot(startU - centerU, startV - centerV);
+	const double radiusWorld = radius * scale;
+	const double sweep = std::abs(arcSweep(command));
+	const double tolerance = std::max(chordTolerance, 0.000001);
+
+	double anglePerSegment = MaximumAnglePerSegment;
+	if (radiusWorld > tolerance) {
+		const double cosine = std::clamp(1.0 - tolerance / radiusWorld, -1.0, 1.0);
+		anglePerSegment = std::min(2.0 * std::acos(cosine), MaximumAnglePerSegment);
+	}
+	const int curvatureSegments = static_cast<int>(std::ceil(sweep / anglePerSegment));
+	const double perpendicularLength =
+		std::abs(endPerpendicular - startPerpendicular) * scale;
+	const double pathLength = std::hypot(radiusWorld * sweep, perpendicularLength);
+	const int lengthSegments = static_cast<int>(std::ceil(pathLength / MaximumSegmentLength));
+	return std::clamp(
+		std::max({MinimumSegments, curvatureSegments, lengthSegments}),
+		MinimumSegments,
+		MaximumSegments);
+}
+
 double MotionInterpolator::durationSeconds(
 	const ToolpathCommand& command,
 	double rapidFeedRate,

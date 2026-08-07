@@ -10,7 +10,6 @@ namespace {
 
 constexpr float SnapDistancePixels = 14.0f;
 constexpr float ClickDragThresholdPixels = 4.0f;
-constexpr int ArcSampleCount = 48;
 constexpr double TwoPi = 6.28318530717958647692;
 
 glm::vec3 worldPoint(const nc::AxisPosition& position, float scale) {
@@ -354,18 +353,14 @@ void MeasurementState::markGeometryDirty() {
 }
 
 void MeasurementState::ensureGeometry(const SceneStateContext& context) {
-	if (cachedRapidVisible != context.showRapidToolpaths) {
-		geometryDirty = true;
-	}
 	if (geometryDirty) {
 		rebuildGeometry(context);
 	}
 }
 
 void MeasurementState::rebuildGeometry(const SceneStateContext& context) {
-	pathSegments.clear();
-	screenSegments.clear();
-	cachedRapidVisible = context.showRapidToolpaths;
+	pathEndpoints.clear();
+	screenEndpoints.clear();
 	geometryDirty = false;
 	projectionValid = false;
 	if (!context.toolpath) {
@@ -373,26 +368,27 @@ void MeasurementState::rebuildGeometry(const SceneStateContext& context) {
 	}
 
 	unitScale = context.toolpath->units == nc::Units::Inches ? 25.4f : 1.0f;
+	pathEndpoints.reserve(context.toolpath->size() * 2);
 	for (std::size_t commandIndex = 0; commandIndex < context.toolpath->size(); ++commandIndex) {
-		const nc::ToolpathCommand command = context.toolpath->getCommand(commandIndex);
-		if (!isMotion(command) ||
-			(command.type == nc::MotionType::Rapid && !context.showRapidToolpaths)) {
+		const nc::ToolpathCommand& command = context.toolpath->getCommandRef(commandIndex);
+		if (!isMotion(command)) {
 			continue;
 		}
-		const int sampleCount = isArc(command) ? ArcSampleCount : 1;
-		for (int sample = 0; sample < sampleCount; ++sample) {
-			const double t0 = static_cast<double>(sample) / sampleCount;
-			const double t1 = static_cast<double>(sample + 1) / sampleCount;
-			const nc::AxisPosition start = nc::MotionInterpolator::sample(command, t0);
-			const nc::AxisPosition end = nc::MotionInterpolator::sample(command, t1);
-			pathSegments.push_back({
-				worldPoint(start, unitScale),
-				worldPoint(end, unitScale),
-				commandIndex,
-				t0,
-				t1
-			});
-		}
+		const bool rapid = command.type == nc::MotionType::Rapid;
+		pathEndpoints.push_back({
+			command.start,
+			worldPoint(command.start, unitScale),
+			commandIndex,
+			0.0,
+			rapid
+		});
+		pathEndpoints.push_back({
+			command.end,
+			worldPoint(command.end, unitScale),
+			commandIndex,
+			1.0,
+			rapid
+		});
 	}
 }
 
@@ -416,16 +412,13 @@ void MeasurementState::ensureProjection(const SceneStateContext& context) {
 void MeasurementState::rebuildProjection(
 	const SceneStateContext& context,
 	const glm::mat4& viewProjection) {
-	screenSegments.clear();
-	screenSegments.reserve(pathSegments.size());
-	for (const PathSegment& segment : pathSegments) {
-		float startDepth = 0.0f;
-		float endDepth = 0.0f;
-		const glm::vec2 start = screenPosition(context, segment.worldStart, &startDepth);
-		const glm::vec2 end = screenPosition(context, segment.worldEnd, &endDepth);
-		const bool visible = startDepth >= -1.0f && startDepth <= 1.0f &&
-			endDepth >= -1.0f && endDepth <= 1.0f;
-		screenSegments.push_back({start, end, visible});
+	screenEndpoints.clear();
+	screenEndpoints.reserve(pathEndpoints.size());
+	for (const PathEndpoint& endpoint : pathEndpoints) {
+		float depth = 0.0f;
+		const glm::vec2 point = screenPosition(context, endpoint.worldPoint, &depth);
+		const bool visible = depth >= -1.0f && depth <= 1.0f;
+		screenEndpoints.push_back({point, visible});
 	}
 	cachedViewProjection = viewProjection;
 	cachedScreenRect = context.screenRect;
@@ -447,34 +440,22 @@ MeasurementState::SnapPoint MeasurementState::findSnap(
 		return result;
 	}
 
-	for (std::size_t index = 0; index < pathSegments.size(); ++index) {
-		const ScreenSegment& screen = screenSegments[index];
-		if (!screen.visible) {
+	for (std::size_t index = 0; index < pathEndpoints.size(); ++index) {
+		const ScreenEndpoint& screen = screenEndpoints[index];
+		const PathEndpoint& endpoint = pathEndpoints[index];
+		if (!screen.visible || (endpoint.rapid && !context.showRapidToolpaths)) {
 			continue;
 		}
 
-		const PathSegment& path = pathSegments[index];
-		const auto testEndpoint = [&](const glm::vec2& endpoint, double commandT) {
-			const float distance = glm::distance(mouse, endpoint);
-			if (distance >= result.pixelDistance || distance > SnapDistancePixels) {
-				return;
-			}
-			const nc::ToolpathCommand command = context.toolpath->getCommand(path.commandIndex);
-			const nc::AxisPosition model = nc::MotionInterpolator::sample(command, commandT);
+		const float distance = glm::distance(mouse, screen.point);
+		if (distance < result.pixelDistance && distance <= SnapDistancePixels) {
 			result.valid = true;
-			result.modelPoint = model;
-			result.worldPoint = worldPoint(model, unitScale);
-			result.screenPoint = endpoint;
-			result.commandIndex = path.commandIndex;
-			result.commandT = commandT;
+			result.modelPoint = endpoint.modelPoint;
+			result.worldPoint = endpoint.worldPoint;
+			result.screenPoint = screen.point;
+			result.commandIndex = endpoint.commandIndex;
+			result.commandT = endpoint.commandT;
 			result.pixelDistance = distance;
-		};
-
-		if (path.commandTStart <= 0.0) {
-			testEndpoint(screen.start, 0.0);
-		}
-		if (path.commandTEnd >= 1.0) {
-			testEndpoint(screen.end, 1.0);
 		}
 	}
 	return result;
@@ -502,12 +483,17 @@ void MeasurementState::drawMotionHighlight(
 		return;
 	}
 	ofSetColor(255, 170, 45);
-	for (const PathSegment& segment : pathSegments) {
-		if (segment.commandIndex == commandIndex) {
-			ofDrawLine(segment.worldStart, segment.worldEnd);
-		}
+	const nc::ToolpathCommand& command = context.toolpath->getCommandRef(commandIndex);
+	const int segmentCount = isArc(command)
+		? nc::MotionInterpolator::arcSegmentCount(command, unitScale)
+		: 1;
+	nc::AxisPosition previous = command.start;
+	for (int segment = 1; segment <= segmentCount; ++segment) {
+		const double t = static_cast<double>(segment) / segmentCount;
+		const nc::AxisPosition current = nc::MotionInterpolator::sample(command, t);
+		ofDrawLine(worldPoint(previous, unitScale), worldPoint(current, unitScale));
+		previous = current;
 	}
-	const nc::ToolpathCommand command = context.toolpath->getCommand(commandIndex);
 	if (isArc(command)) {
 		const glm::vec3 center = worldPoint(command.center, unitScale);
 		ofSetColor(255, 100, 60);
@@ -576,7 +562,8 @@ std::vector<std::string> MeasurementState::infoLines(const SceneStateContext& co
 	if (!motionPoint || !context.toolpath || motionPoint->commandIndex >= context.toolpath->size()) {
 		return lines;
 	}
-	const nc::ToolpathCommand command = context.toolpath->getCommand(motionPoint->commandIndex);
+	const nc::ToolpathCommand& command =
+		context.toolpath->getCommandRef(motionPoint->commandIndex);
 	if (command.type == nc::MotionType::Rapid || command.type == nc::MotionType::Linear) {
 		lines.push_back(command.type == nc::MotionType::Rapid ? "Hareket: G0 Rapid" : "Hareket: G1 Dogrusal");
 		lines.push_back("Uzunluk: " + ofToString(linearLength(command), 4) + " " + unit);

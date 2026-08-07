@@ -24,17 +24,16 @@ public:
 	bool requestsExit() const override;
 
 private:
-	struct PathSegment {
-		glm::vec3 worldStart{0.0f};
-		glm::vec3 worldEnd{0.0f};
+	struct PathEndpoint {
+		nc::AxisPosition modelPoint;
+		glm::vec3 worldPoint{0.0f};
 		std::size_t commandIndex = 0;
-		double commandTStart = 0.0;
-		double commandTEnd = 1.0;
+		double commandT = 0.0;
+		bool rapid = false;
 	};
 
-	struct ScreenSegment {
-		glm::vec2 start{0.0f};
-		glm::vec2 end{0.0f};
+	struct ScreenEndpoint {
+		glm::vec2 point{0.0f};
 		bool visible = false;
 	};
 
@@ -62,8 +61,8 @@ private:
 	std::vector<std::string> infoLines(const SceneStateContext& context) const;
 	void ensureToolbarIcon();
 
-	std::vector<PathSegment> pathSegments;
-	std::vector<ScreenSegment> screenSegments;
+	std::vector<PathEndpoint> pathEndpoints;
+	std::vector<ScreenEndpoint> screenEndpoints;
 	std::optional<SnapPoint> firstPoint;
 	std::optional<SnapPoint> secondPoint;
 	SnapPoint hoverPoint;
@@ -74,7 +73,6 @@ private:
 	ofRectangle cachedRenderViewport;
 	bool geometryDirty = true;
 	bool projectionValid = false;
-	bool cachedRapidVisible = true;
 	bool exitRequested = false;
 	bool toolbarIconLoadAttempted = false;
 	bool mouseDraggedSincePress = false;

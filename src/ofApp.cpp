@@ -11,6 +11,7 @@
 #include <cmath>
 #include <chrono>
 #include <fstream>
+#include <utility>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -270,7 +271,7 @@ void ofApp::updateInterpretation(){
 	}
 
 	if (importResult.success) {
-		currentToolpath = importResult.toolpath;
+		currentToolpath = std::move(importResult.toolpath);
 		sceneStates.notifyToolpathChanged();
 		rebuildToolpathEditorLines();
 		rebuildToolpathMesh();
@@ -281,7 +282,8 @@ void ofApp::updateInterpretation(){
 		ofLogNotice("NC Import") << statusMessage;
 	} else {
 		simulation.stop();
-		toolpathMesh.clear();
+		cuttingToolpathMesh.clear();
+		rapidToolpathMesh.clear();
 		toolpathEditorLines.clear();
 		editorSimulationLine = -1;
 		statusMessage = importResult.error;
@@ -304,7 +306,7 @@ void ofApp::rebuildToolpathEditorLines(){
 	std::string previousSource;
 	int previousEditorLine = -1;
 	for (std::size_t commandIndex = 0; commandIndex < currentToolpath.size(); ++commandIndex) {
-		const nc::ToolpathCommand command = currentToolpath.getCommand(commandIndex);
+		const nc::ToolpathCommand& command = currentToolpath.getCommandRef(commandIndex);
 		const std::string source = compactGCode(command.sourceText);
 		if (source.empty()) {
 			continue;
@@ -365,7 +367,7 @@ void ofApp::jumpSimulationToEditorLine(int editorLine){
 	std::size_t previousMovement = currentToolpath.size();
 	std::size_t firstMovement = currentToolpath.size();
 	for (std::size_t commandIndex = 0; commandIndex < currentToolpath.size(); ++commandIndex) {
-		const nc::ToolpathCommand command = currentToolpath.getCommand(commandIndex);
+		const nc::ToolpathCommand& command = currentToolpath.getCommandRef(commandIndex);
 		const bool isMovement =
 			command.type == nc::MotionType::Rapid ||
 			command.type == nc::MotionType::Linear ||
@@ -418,7 +420,7 @@ void ofApp::stepSimulationLine(int direction){
 	std::vector<std::size_t> lineEnds;
 	int previousEditorLine = -1;
 	for (std::size_t commandIndex = 0; commandIndex < currentToolpath.size(); ++commandIndex) {
-		const nc::ToolpathCommand command = currentToolpath.getCommand(commandIndex);
+		const nc::ToolpathCommand& command = currentToolpath.getCommandRef(commandIndex);
 		const bool isMovement =
 			command.type == nc::MotionType::Rapid ||
 			command.type == nc::MotionType::Linear ||
@@ -524,8 +526,17 @@ void ofApp::saveEditorText(){
 
 //--------------------------------------------------------------
 void ofApp::rebuildToolpathMesh(){
-	toolpathMesh.clear();
-	toolpathMesh.setMode(OF_PRIMITIVE_LINES);
+	cuttingToolpathMesh.clear();
+	rapidToolpathMesh.clear();
+	cuttingToolpathMesh.setMode(OF_PRIMITIVE_LINES);
+	rapidToolpathMesh.setMode(OF_PRIMITIVE_LINES);
+	cuttingToolpathMesh.setUsage(GL_STATIC_DRAW);
+	rapidToolpathMesh.setUsage(GL_STATIC_DRAW);
+	const std::size_t initialVertexCapacity = currentToolpath.size() * 2;
+	cuttingToolpathMesh.getVertices().reserve(initialVertexCapacity);
+	cuttingToolpathMesh.getColors().reserve(initialVertexCapacity);
+	rapidToolpathMesh.getVertices().reserve(initialVertexCapacity);
+	rapidToolpathMesh.getColors().reserve(initialVertexCapacity);
 
 	const float unitScale = currentToolpath.units == nc::Units::Inches ? 25.4f : 1.0f;
 	const auto point = [unitScale](const nc::AxisPosition& position) {
@@ -534,32 +545,44 @@ void ofApp::rebuildToolpathMesh(){
 			static_cast<float>(position.y) * unitScale,
 			static_cast<float>(position.z) * unitScale);
 	};
-	const auto addSegment = [this, &point](
+	const auto addSegment = [&point](
+		ofVboMesh& mesh,
 		const nc::AxisPosition& start,
 		const nc::AxisPosition& end,
 		const ofFloatColor& color) {
-		toolpathMesh.addVertex(point(start));
-		toolpathMesh.addColor(color);
-		toolpathMesh.addVertex(point(end));
-		toolpathMesh.addColor(color);
+		mesh.addVertex(point(start));
+		mesh.addColor(color);
+		mesh.addVertex(point(end));
+		mesh.addColor(color);
 	};
 
 	for (std::size_t index = 0; index < currentToolpath.size(); ++index) {
-		const nc::ToolpathCommand command = currentToolpath.getCommand(index);
+		const nc::ToolpathCommand& command = currentToolpath.getCommandRef(index);
 		if (command.type == nc::MotionType::Rapid) {
-			if (showRapidToolpaths) {
-				addSegment(command.start, command.end, ofFloatColor(0.58f, 0.60f, 0.64f));
-			}
+			addSegment(
+				rapidToolpathMesh,
+				command.start,
+				command.end,
+				ofFloatColor(0.58f, 0.60f, 0.64f));
 		} else if (command.type == nc::MotionType::Linear) {
-			addSegment(command.start, command.end, ofFloatColor(0.20f, 1.0f, 0.35f));
+			addSegment(
+				cuttingToolpathMesh,
+				command.start,
+				command.end,
+				ofFloatColor(0.20f, 1.0f, 0.35f));
 		} else if (command.type == nc::MotionType::ArcClockwise ||
 			command.type == nc::MotionType::ArcCounterClockwise) {
-			constexpr int ArcSegments = 48;
+			const int arcSegments =
+				nc::MotionInterpolator::arcSegmentCount(command, unitScale);
 			nc::AxisPosition previous = command.start;
-			for (int segment = 1; segment <= ArcSegments; ++segment) {
-				const double t = static_cast<double>(segment) / ArcSegments;
+			for (int segment = 1; segment <= arcSegments; ++segment) {
+				const double t = static_cast<double>(segment) / arcSegments;
 				const nc::AxisPosition current = nc::MotionInterpolator::sample(command, t);
-				addSegment(previous, current, ofFloatColor(1.0f, 0.65f, 0.15f));
+				addSegment(
+					cuttingToolpathMesh,
+					previous,
+					current,
+					ofFloatColor(1.0f, 0.65f, 0.15f));
 				previous = current;
 			}
 		}
@@ -638,7 +661,10 @@ void ofApp::drawScene(int width, int height){
 	ofPushStyle();
 	ofSetColor(255);
 	ofSetLineWidth(2.5f);
-	toolpathMesh.draw();
+	if (showRapidToolpaths) {
+		rapidToolpathMesh.draw();
+	}
+	cuttingToolpathMesh.draw();
 	ofPopStyle();
 	ofSetColor(255, 140, 40);
 	//ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
@@ -712,7 +738,6 @@ void ofApp::drawInterface(){
 				statusMessage = "Kamera sifirlandi";
 			}
 			if (ImGui::MenuItem("Rapid takim yollarini goster", nullptr, &showRapidToolpaths)) {
-				rebuildToolpathMesh();
 				statusMessage = showRapidToolpaths
 					? "Rapid takim yollari gosteriliyor"
 					: "Rapid takim yollari gizlendi";
