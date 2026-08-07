@@ -66,6 +66,7 @@ bool drawZUpViewCube(ofEasyCam& camera, const ofRectangle& rectangle) {
 	return true;
 }
 
+//editorde G kod satýrlarýný renklendirmek için
 bool tokenizeGCodeLine(
 	const char* begin,
 	const char* end,
@@ -582,7 +583,7 @@ void ofApp::rebuildToolpathMesh(){
 					cuttingToolpathMesh,
 					previous,
 					current,
-					ofFloatColor(1.0f, 0.65f, 0.15f));
+					ofFloatColor(0.20f, 0.350f, 1.0f));
 				previous = current;
 			}
 		}
@@ -654,8 +655,8 @@ void ofApp::drawScene(int width, int height){
 	ofEnableDepthTest();
 
 	camera.begin();
-	ofSetColor(80);
-	ofDrawGrid(100.0f, 10, true, false, false, true);
+	//ofSetColor(80);
+	//ofDrawGrid(100.0f, 10, true, false, false, true);
 	ofSetColor(255);
 	ofDrawAxis(150.0f);
 	ofPushStyle();
