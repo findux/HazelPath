@@ -603,6 +603,10 @@ void ofApp::resetCamera(){
 	//camera.setDistance(750.0f);
 }
 
+void ofApp::fitCamera() {
+	
+}
+
 //--------------------------------------------------------------
 void ofApp::update(){
 	updateInterpretation();

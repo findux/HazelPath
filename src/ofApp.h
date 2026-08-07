@@ -33,6 +33,7 @@ class ofApp : public ofBaseApp{
 
 	private:
 		void resetCamera();
+		void fitCamera();
 		void interpretEditorText();
 		void updateInterpretation();
 		void rebuildToolpathMesh();
