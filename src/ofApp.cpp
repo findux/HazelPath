@@ -17,7 +17,7 @@
 
 namespace {
 
-bool drawZUpViewCube(ofEasyCam& camera, const ofRectangle& rectangle) {
+bool drawZUpViewCube(OrbitCameraController& camera, const ofRectangle& rectangle) {
 	const glm::mat4 appToGizmo = glm::rotate(
 		glm::mat4(1.0f),
 		glm::radians(-90.0f),
@@ -66,7 +66,7 @@ bool drawZUpViewCube(ofEasyCam& camera, const ofRectangle& rectangle) {
 	return true;
 }
 
-//editorde G kod satýrlarýný renklendirmek için
+//editorde G kod satÄ±rlarÄ±nÄ± renklendirmek iÃ§in
 bool tokenizeGCodeLine(
 	const char* begin,
 	const char* end,
@@ -223,9 +223,6 @@ void ofApp::setup(){
 	interpretEditorText();
 
 	
-	//camera.setPosition(glm::vec3(100.0f, -100.0f, 50.0f));
-	//camera.setTarget(glm::vec3(0.0f));
-	//camera.setUpAxis(glm::vec3(0.0f, 0.0f, 1.0f));
 	camera.enableMouseInput();
 	resetCamera();
 }
@@ -594,17 +591,11 @@ void ofApp::resetCamera(){
 	const glm::vec3 target(0.0f, 0.0f, 0.0f);
 	const glm::vec3 zUp(0.0f, 0.0f, 1.0f);
 
-	camera.reset();
-	camera.setUpAxis(zUp);
-	camera.setRelativeYAxis(false);
-	camera.setPosition(500.0f, -500.0f, 400.0f);
-	camera.setTarget(target);
-	camera.lookAt(target, zUp);
-	//camera.setDistance(750.0f);
+	camera.setView(glm::vec3(500.0f, -500.0f, 400.0f), target, zUp);
 }
 
 void ofApp::fitCamera() {
-	
+	//cuttingToolpathMesh.get
 }
 
 //--------------------------------------------------------------
@@ -817,8 +808,8 @@ void ofApp::drawInterface(){
 	const ImTextureID textureId = (ImTextureID)(uintptr_t)sceneFbo.getTexture().getTextureData().textureID;
 	ImGui::Image(textureId, imageSize, ImVec2(0, 0), ImVec2(1, 1));
 
-	// ofEasyCam pencere koordinatlariyla calisir. FBO goruntusunun ImGui
-	// icindeki kesin ekran alanini kameranin fare kontrol alani olarak kullan.
+	// FBO goruntusunun ImGui icindeki kesin ekran alanini kamera kontrol
+	// alanina aktar.
 	const ImVec2 sceneMin = ImGui::GetItemRectMin();
 	const ImVec2 sceneMax = ImGui::GetItemRectMax();
 	camera.setControlArea(ofRectangle(

@@ -7,7 +7,7 @@
 
 class SceneStateManager {
 public:
-	void setResources(ofEasyCam* camera, const nc::Toolpath* toolpath);
+	void setResources(OrbitCameraController* camera, const nc::Toolpath* toolpath);
 	void setScreenRect(const ofRectangle& rectangle);
 	void setRenderViewport(const ofRectangle& viewport);
 	void setRapidVisible(bool visible);

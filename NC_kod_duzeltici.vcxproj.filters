@@ -593,6 +593,19 @@
 	<ItemGroup>
 		<ResourceCompile Include="icon.rc" />
 	</ItemGroup>
+	<ItemGroup>
+		<Filter Include="src&#92;camera">
+			<UniqueIdentifier>{80BDF296-5814-444D-8E3A-65B55D46AD0A}</UniqueIdentifier>
+		</Filter>
+	</ItemGroup>
+	<ItemGroup>
+		<ClCompile Include="src/camera/OrbitCameraController.cpp">
+			<Filter>src&#92;camera</Filter>
+		</ClCompile>
+		<ClInclude Include="src/camera/OrbitCameraController.h">
+			<Filter>src&#92;camera</Filter>
+		</ClInclude>
+	</ItemGroup>
 </Project>
 
 

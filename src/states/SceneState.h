@@ -2,10 +2,11 @@
 
 #include "ofMain.h"
 #include "ofxImGui.h"
+#include "camera/OrbitCameraController.h"
 #include "toolpath/Toolpath.h"
 
 struct SceneStateContext {
-	ofEasyCam* camera = nullptr;
+	OrbitCameraController* camera = nullptr;
 	const nc::Toolpath* toolpath = nullptr;
 	ofRectangle screenRect;
 	ofRectangle renderViewport;

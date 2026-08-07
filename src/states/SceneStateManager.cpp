@@ -1,6 +1,8 @@
 #include "SceneStateManager.h"
 
-void SceneStateManager::setResources(ofEasyCam* camera, const nc::Toolpath* toolpath) {
+void SceneStateManager::setResources(
+	OrbitCameraController* camera,
+	const nc::Toolpath* toolpath) {
 	context.camera = camera;
 	context.toolpath = toolpath;
 }
