@@ -951,9 +951,15 @@ void ofApp::drawInterface(){
 	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = simulation.getSpeed() < 0.0 ? "Geri sariyor" : "Oynuyor";
 	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatildi";
 	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandi";
+#ifdef _DEBUG
 	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
 		statusMessage.c_str(), simulationText, editorSimulationLine + 1,
 		simulatedPosition.x, simulatedPosition.y, simulatedPosition.z, ofGetFrameRate());
+#else
+	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f",
+		statusMessage.c_str(), simulationText, editorSimulationLine + 1,
+		simulatedPosition.x, simulatedPosition.y, simulatedPosition.z);
+#endif
 
 	ImGui::End();
 }
