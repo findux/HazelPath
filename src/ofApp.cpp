@@ -848,9 +848,11 @@ void ofApp::drawInterface(){
 	ImGui::EndChild();
 
 	ImGui::Separator();
+	ImGui::PushButtonRepeat(true);
 	if (ImGui::Button("<<")) {
 		stepSimulationLine(-1);
 	}
+	ImGui::PopButtonRepeat();
 	ImGui::SameLine();
 	if (ImGui::Button("Oynat")) {
 		const double speed = simulation.getSpeed();
@@ -866,9 +868,11 @@ void ofApp::drawInterface(){
 		simulation.stop();
 	}
 	ImGui::SameLine();
+	ImGui::PushButtonRepeat(true);
 	if (ImGui::Button(">>")) {
 		stepSimulationLine(1);
 	}
+	ImGui::PopButtonRepeat();
 	ImGui::SameLine();
 	float speedSlider = simulationSliderFromSpeed(simulation.getSpeed());
 	ImGui::SetNextItemWidth(180.0f);
