@@ -522,22 +522,26 @@ void ofApp::drawTextEditor(){
 }
 
 //--------------------------------------------------------------
-void ofApp::openEditorFile(){
-	ofFileDialogResult result = ofSystemLoadDialog("NC dosyasi ac", false, editorFilePath);
-	if (!result.bSuccess) return;
-	std::ifstream input(result.getPath(), std::ios::binary);
+bool ofApp::loadEditorFile(const std::string& path){
+	std::ifstream input(path, std::ios::binary);
 	if (!input.is_open()) {
-		statusMessage = "Dosya acilamadi: " + result.getName();
-		return;
+		statusMessage = "Dosya acilamadi: " + ofFilePath::getFileName(path);
+		return false;
 	}
 	const std::string text((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
 	textEditor.SetText(text);
-	editorFilePath = result.getPath();
+	editorFilePath = path;
 	savedEditorText = text;
 	editorDocumentDirty = false;
 	previousEditorCursorLine = -1;
-	statusMessage = result.getName() + " acildi";
+	statusMessage = ofFilePath::getFileName(path) + " acildi";
 	interpretEditorText();
+	return true;
+}
+
+void ofApp::openEditorFile(){
+	ofFileDialogResult result = ofSystemLoadDialog("NC dosyasi ac", false, editorFilePath);
+	if (result.bSuccess) loadEditorFile(result.getPath());
 }
 
 bool ofApp::saveEditorText(){
@@ -993,4 +997,8 @@ void ofApp::mouseEntered(int x, int y){}
 void ofApp::mouseExited(int x, int y){}
 void ofApp::windowResized(int w, int h){}
 void ofApp::gotMessage(ofMessage msg){}
-void ofApp::dragEvent(ofDragInfo dragInfo){}
+void ofApp::dragEvent(ofDragInfo dragInfo){
+	if (!dragInfo.files.empty()) {
+		loadEditorFile(dragInfo.files.front().string());
+	}
+}

@@ -43,6 +43,7 @@ class ofApp : public ofBaseApp{
 		void jumpSimulationToEditorLine(int editorLine);
 		void stepSimulationLine(int direction);
 		void drawTextEditor();
+		bool loadEditorFile(const std::string& path);
 		void openEditorFile();
 		bool saveEditorText();
 		void drawScene(int width, int height);
