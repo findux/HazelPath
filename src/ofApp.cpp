@@ -495,15 +495,20 @@ void ofApp::drawTextEditor(){
 	const ImVec2 editorSize = ImGui::GetWindowSize();
 	const ImVec2 editorMax(editorMin.x + editorSize.x, editorMin.y + editorSize.y);
 	textEditor.Render("##GCodeEditorContent");
+	const int editorCursorLine = textEditor.GetCursorPosition().mLine;
 	const ImVec2 mousePosition = ImGui::GetIO().MousePos;
 	const bool mouseInsideEditor =
 		mousePosition.x >= editorMin.x && mousePosition.x < editorMax.x &&
 		mousePosition.y >= editorMin.y && mousePosition.y < editorMax.y;
+	const bool editorLineChanged =
+		previousEditorCursorLine >= 0 && editorCursorLine != previousEditorCursorLine;
+	const bool editorLineDoubleClicked =
+		mouseInsideEditor && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
 	if (simulation.getStatus() != nc::SimulationStatus::Playing &&
-		mouseInsideEditor &&
-		ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-		jumpSimulationToEditorLine(textEditor.GetCursorPosition().mLine);
+		(editorLineChanged || editorLineDoubleClicked)) {
+		jumpSimulationToEditorLine(editorCursorLine);
 	}
+	previousEditorCursorLine = editorCursorLine;
 
 	if (simulation.getStatus() == nc::SimulationStatus::Playing &&
 		editorSimulationLine >= 0) {

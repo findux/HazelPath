@@ -67,5 +67,6 @@ class ofApp : public ofBaseApp{
 		bool importInProgress = false;
 		bool viewCubeUsing = false;
 		int editorSimulationLine = -1;
+		int previousEditorCursorLine = -1;
 		std::string statusMessage = "Hazir";
 };
