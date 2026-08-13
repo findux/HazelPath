@@ -43,7 +43,8 @@ class ofApp : public ofBaseApp{
 		void jumpSimulationToEditorLine(int editorLine);
 		void stepSimulationLine(int direction);
 		void drawTextEditor();
-		void saveEditorText();
+		void openEditorFile();
+		bool saveEditorText();
 		void drawScene(int width, int height);
 		void drawInterface();
 
@@ -68,5 +69,8 @@ class ofApp : public ofBaseApp{
 		bool viewCubeUsing = false;
 		int editorSimulationLine = -1;
 		int previousEditorCursorLine = -1;
+		bool editorDocumentDirty = false;
+		std::string editorFilePath;
+		std::string savedEditorText;
 		std::string statusMessage = "Hazir";
 };

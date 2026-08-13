@@ -220,6 +220,7 @@ void ofApp::setup(){
 	textEditor.SetLanguageDefinition(gcodeLanguage);
 	textEditor.SetImGuiChildIgnored(true);
 	textEditor.SetText(initialNc);
+	savedEditorText = initialNc;
 	interpretEditorText();
 
 	
@@ -509,6 +510,7 @@ void ofApp::drawTextEditor(){
 		jumpSimulationToEditorLine(editorCursorLine);
 	}
 	previousEditorCursorLine = editorCursorLine;
+	editorDocumentDirty = textEditor.GetText() != savedEditorText;
 
 	if (simulation.getStatus() == nc::SimulationStatus::Playing &&
 		editorSimulationLine >= 0) {
@@ -520,11 +522,44 @@ void ofApp::drawTextEditor(){
 }
 
 //--------------------------------------------------------------
-void ofApp::saveEditorText(){
-	std::ofstream output(ofToDataPath("program.nc"));
-	if (output.is_open()) {
-		output << textEditor.GetText();
+void ofApp::openEditorFile(){
+	ofFileDialogResult result = ofSystemLoadDialog("NC dosyasi ac", false, editorFilePath);
+	if (!result.bSuccess) return;
+	std::ifstream input(result.getPath(), std::ios::binary);
+	if (!input.is_open()) {
+		statusMessage = "Dosya acilamadi: " + result.getName();
+		return;
 	}
+	const std::string text((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+	textEditor.SetText(text);
+	editorFilePath = result.getPath();
+	savedEditorText = text;
+	editorDocumentDirty = false;
+	previousEditorCursorLine = -1;
+	statusMessage = result.getName() + " acildi";
+	interpretEditorText();
+}
+
+bool ofApp::saveEditorText(){
+	if (editorFilePath.empty()) {
+		ofFileDialogResult result = ofSystemSaveDialog("program.nc", "NC dosyasini kaydet");
+		if (!result.bSuccess) return false;
+		editorFilePath = result.getPath();
+	}
+	std::ofstream output(editorFilePath, std::ios::binary);
+	if (!output.is_open()) {
+		statusMessage = "Dosya kaydedilemedi: " + ofFilePath::getFileName(editorFilePath);
+		return false;
+	}
+	savedEditorText = textEditor.GetText();
+	output << savedEditorText;
+	if (!output.good()) {
+		statusMessage = "Dosya kaydedilemedi: " + ofFilePath::getFileName(editorFilePath);
+		return false;
+	}
+	editorDocumentDirty = false;
+	statusMessage = ofFilePath::getFileName(editorFilePath) + " kaydedildi";
+	return true;
 }
 
 //--------------------------------------------------------------
@@ -714,14 +749,20 @@ void ofApp::drawInterface(){
 	ImGui::PopStyleVar(3);
 
 	if (ImGui::BeginMenuBar()) {
+		editorDocumentDirty = textEditor.GetText() != savedEditorText;
 		if (ImGui::BeginMenu("Dosya")) {
 			if (ImGui::MenuItem("Yeni")) {
 				textEditor.SetText("");
+				editorFilePath.clear();
+				savedEditorText.clear();
+				editorDocumentDirty = false;
 				statusMessage = "Yeni belge olusturuldu";
+			}
+			if (ImGui::MenuItem("Ac", "Ctrl+O")) {
+				openEditorFile();
 			}
 			if (ImGui::MenuItem("Kaydet", "Ctrl+S")) {
 				saveEditorText();
-				statusMessage = "program.nc kaydedildi";
 			}
 			if (ImGui::MenuItem("Cikis")) {
 				ofExit();
@@ -745,6 +786,9 @@ void ofApp::drawInterface(){
 			}
 			ImGui::EndMenu();
 		}
+		ImGui::SameLine();
+		const std::string documentName = editorFilePath.empty() ? "Adsiz" : ofFilePath::getFileName(editorFilePath);
+		ImGui::TextUnformatted((documentName + (editorDocumentDirty ? " *" : "")).c_str());
 		ImGui::SameLine();
 		static char str0[128] = "Hello, world!";
 		ImGui::InputText("Position", str0, IM_ARRAYSIZE(str0));
@@ -931,7 +975,11 @@ void ofApp::keyPressed(int key){
 	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
 		(key == 's' || key == 'S')) {
 		saveEditorText();
-		statusMessage = "program.nc kaydedildi";
+		return;
+	}
+	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
+		(key == 'o' || key == 'O')) {
+		openEditorFile();
 	}
 }
 
