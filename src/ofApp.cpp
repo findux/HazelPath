@@ -219,9 +219,9 @@ void ofApp::setup(){
 	gcodeLanguage.mTokenRegexStrings.clear();
 	textEditor.SetLanguageDefinition(gcodeLanguage);
 	textEditor.SetImGuiChildIgnored(true);
-	textEditor.SetText(initialNc);
-	savedEditorText = initialNc;
-	interpretEditorText();
+	//textEditor.SetText(initialNc);
+	//savedEditorText = initialNc;
+	//interpretEditorText();
 
 	
 	camera.enableMouseInput();
@@ -794,14 +794,15 @@ void ofApp::drawInterface(){
 		const std::string documentName = editorFilePath.empty() ? "Adsiz" : ofFilePath::getFileName(editorFilePath);
 		ImGui::TextUnformatted((documentName + (editorDocumentDirty ? " *" : "")).c_str());
 		ImGui::SameLine();
-		static char str0[128] = "Hello, world!";
-		ImGui::InputText("Position", str0, IM_ARRAYSIZE(str0));
-		ImGui::SameLine();
-		if (ImGui::Button("Ucur")) {
-			auto pos = std::stoi(str0);
-			auto coordi = TextEditor::Coordinates(pos, 0);
-			textEditor.SetCursorPosition(coordi);
-		}
+		// debug
+		//static char str0[128] = "Hello, world!";
+		//ImGui::InputText("Position", str0, IM_ARRAYSIZE(str0));
+		//ImGui::SameLine();
+		//if (ImGui::Button("Ucur")) {
+		//	auto pos = std::stoi(str0);
+		//	auto coordi = TextEditor::Coordinates(pos, 0);
+		//	textEditor.SetCursorPosition(coordi);
+		//}
 		ImGui::EndMenuBar();
 	}
 
