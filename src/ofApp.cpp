@@ -19,15 +19,10 @@
 namespace {
 
 bool drawZUpViewCube(OrbitCameraController& camera, const ofRectangle& rectangle) {
-	const glm::mat4 appToGizmo = glm::rotate(
-		glm::mat4(1.0f),
-		glm::radians(-90.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f));
 	const glm::mat4 cameraTransformWithoutScale =
 		glm::translate(glm::mat4(1.0f), camera.getGlobalPosition()) *
 		glm::mat4_cast(camera.getGlobalOrientation());
-	glm::mat4 gizmoView =
-		glm::inverse(cameraTransformWithoutScale) * glm::inverse(appToGizmo);
+	glm::mat4 gizmoView = glm::inverse(cameraTransformWithoutScale);
 	const glm::mat4 previousView = gizmoView;
 	const ofColor backgroundColor(20, 22, 28, 180);
 	const ImU32 packedBackground =
@@ -53,7 +48,7 @@ bool drawZUpViewCube(OrbitCameraController& camera, const ofRectangle& rectangle
 		return false;
 	}
 
-	const glm::mat4 cameraTransform = glm::inverse(gizmoView * appToGizmo);
+	const glm::mat4 cameraTransform = glm::inverse(gizmoView);
 	const glm::vec3 position = glm::vec3(cameraTransform[3]);
 	const glm::vec3 backDirection = glm::normalize(glm::vec3(cameraTransform[2]));
 	const glm::vec3 zUp(0.0f, 0.0f, 1.0f);
