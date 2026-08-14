@@ -3,6 +3,7 @@
 #include "toolpath/Toolpath.h"
 
 #include <cstddef>
+#include <vector>
 
 namespace nc {
 
@@ -36,6 +37,8 @@ public:
 	double getProgress() const;
 
 private:
+	void rebuildCommandDurations();
+	double commandDuration(std::size_t index) const;
 	void resetPosition();
 	double totalDurationSeconds() const;
 
@@ -47,6 +50,7 @@ private:
 	double speed = 1.0;
 	double rapidFeedRate = 3000.0;
 	double defaultFeedRate = 1000.0;
+	std::vector<double> commandDurations;
 };
 
 } // namespace nc

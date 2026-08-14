@@ -220,7 +220,6 @@ void ofApp::setup(){
 	textEditor.SetLanguageDefinition(gcodeLanguage);
 	textEditor.SetImGuiChildIgnored(true);
 	//textEditor.SetText(initialNc);
-	//savedEditorText = initialNc;
 	//interpretEditorText();
 
 	
@@ -510,7 +509,9 @@ void ofApp::drawTextEditor(){
 		jumpSimulationToEditorLine(editorCursorLine);
 	}
 	previousEditorCursorLine = editorCursorLine;
-	editorDocumentDirty = textEditor.GetText() != savedEditorText;
+	if (textEditor.IsTextChanged()) {
+		editorDocumentDirty = true;
+	}
 
 	if (simulation.getStatus() == nc::SimulationStatus::Playing &&
 		editorSimulationLine >= 0) {
@@ -531,7 +532,6 @@ bool ofApp::loadEditorFile(const std::string& path){
 	const std::string text((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
 	textEditor.SetText(text);
 	editorFilePath = path;
-	savedEditorText = text;
 	editorDocumentDirty = false;
 	previousEditorCursorLine = -1;
 	statusMessage = ofFilePath::getFileName(path) + " acildi";
@@ -555,8 +555,7 @@ bool ofApp::saveEditorText(){
 		statusMessage = "Dosya kaydedilemedi: " + ofFilePath::getFileName(editorFilePath);
 		return false;
 	}
-	savedEditorText = textEditor.GetText();
-	output << savedEditorText;
+	output << textEditor.GetText();
 	if (!output.good()) {
 		statusMessage = "Dosya kaydedilemedi: " + ofFilePath::getFileName(editorFilePath);
 		return false;
@@ -753,12 +752,10 @@ void ofApp::drawInterface(){
 	ImGui::PopStyleVar(3);
 
 	if (ImGui::BeginMenuBar()) {
-		editorDocumentDirty = textEditor.GetText() != savedEditorText;
 		if (ImGui::BeginMenu("Dosya")) {
 			if (ImGui::MenuItem("Yeni")) {
 				textEditor.SetText("");
 				editorFilePath.clear();
-				savedEditorText.clear();
 				editorDocumentDirty = false;
 				statusMessage = "Yeni belge olusturuldu";
 			}

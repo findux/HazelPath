@@ -72,6 +72,5 @@ class ofApp : public ofBaseApp{
 		int previousEditorCursorLine = -1;
 		bool editorDocumentDirty = false;
 		std::string editorFilePath;
-		std::string savedEditorText;
 		std::string statusMessage = "Hazir";
 };

@@ -8,7 +8,22 @@ namespace nc {
 
 void SimulationController::setToolpath(const Toolpath* value) {
 	toolpath = value;
+	rebuildCommandDurations();
 	stop();
+}
+
+void SimulationController::rebuildCommandDurations() {
+	commandDurations.clear();
+	if (toolpath == nullptr) return;
+	commandDurations.reserve(toolpath->size());
+	for (std::size_t index = 0; index < toolpath->size(); ++index) {
+		commandDurations.push_back(MotionInterpolator::durationSeconds(
+			toolpath->getCommand(index), rapidFeedRate, defaultFeedRate));
+	}
+}
+
+double SimulationController::commandDuration(std::size_t index) const {
+	return index < commandDurations.size() ? commandDurations[index] : 0.0;
 }
 
 void SimulationController::play() {
@@ -64,8 +79,7 @@ void SimulationController::update(double deltaSeconds) {
 		}
 
 		const ToolpathCommand command = toolpath->getCommand(commandIndex);
-		const double duration = MotionInterpolator::durationSeconds(
-			command, rapidFeedRate, defaultFeedRate);
+		const double duration = commandDuration(commandIndex);
 
 		if (duration <= 0.0) {
 			position = command.end;
@@ -119,8 +133,7 @@ void SimulationController::seek(double normalizedProgress) {
 	position = toolpath->getCommand(0).start;
 	for (std::size_t index = 0; index < toolpath->size(); ++index) {
 		const ToolpathCommand command = toolpath->getCommand(index);
-		const double duration = MotionInterpolator::durationSeconds(
-			command, rapidFeedRate, defaultFeedRate);
+		const double duration = commandDuration(index);
 		if (duration <= 0.0) {
 			position = command.end;
 			continue;
@@ -147,8 +160,7 @@ void SimulationController::seekToCommand(
 	const ToolpathCommand command = toolpath->getCommand(index);
 	const double commandProgress = std::max(
 		0.0, std::min(normalizedCommandProgress, 1.0));
-	const double duration = MotionInterpolator::durationSeconds(
-		command, rapidFeedRate, defaultFeedRate);
+	const double duration = commandDuration(index);
 
 	commandIndex = index;
 	commandElapsedSeconds = duration * commandProgress;
@@ -164,10 +176,12 @@ double SimulationController::getSpeed() const { return speed; }
 
 void SimulationController::setRapidFeedRate(double value) {
 	rapidFeedRate = std::max(value, 0.0);
+	rebuildCommandDurations();
 }
 
 void SimulationController::setDefaultFeedRate(double value) {
 	defaultFeedRate = std::max(value, 0.0);
+	rebuildCommandDurations();
 }
 
 SimulationStatus SimulationController::getStatus() const { return status; }
@@ -182,8 +196,7 @@ double SimulationController::getCommandProgress() const {
 		return 1.0;
 	}
 
-	const double duration = MotionInterpolator::durationSeconds(
-		toolpath->getCommand(commandIndex), rapidFeedRate, defaultFeedRate);
+	const double duration = commandDuration(commandIndex);
 	if (duration <= 0.0) {
 		return 0.0;
 	}
@@ -213,8 +226,7 @@ double SimulationController::getProgress() const {
 
 	double elapsedSeconds = 0.0;
 	for (std::size_t index = 0; index < commandIndex; ++index) {
-		elapsedSeconds += MotionInterpolator::durationSeconds(
-			toolpath->getCommand(index), rapidFeedRate, defaultFeedRate);
+		elapsedSeconds += commandDuration(index);
 	}
 	elapsedSeconds += commandElapsedSeconds;
 	return std::max(0.0, std::min(elapsedSeconds / totalDuration, 1.0));
@@ -233,8 +245,7 @@ double SimulationController::totalDurationSeconds() const {
 
 	double total = 0.0;
 	for (std::size_t index = 0; index < toolpath->size(); ++index) {
-		total += MotionInterpolator::durationSeconds(
-			toolpath->getCommand(index), rapidFeedRate, defaultFeedRate);
+		total += commandDuration(index);
 	}
 	return total;
 }
