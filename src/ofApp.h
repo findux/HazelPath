@@ -42,6 +42,9 @@ class ofApp : public ofBaseApp{
 		void syncEditorToSimulation();
 		void jumpSimulationToEditorLine(int editorLine);
 		void stepSimulationLine(int direction);
+		void playSimulation();
+		void pauseSimulation();
+		void stopSimulation();
 		void drawTextEditor();
 		bool loadEditorFile(const std::string& path);
 		void openEditorFile();

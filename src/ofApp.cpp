@@ -480,6 +480,16 @@ void ofApp::stepSimulationLine(int direction){
 	}
 	statusMessage = direction > 0 ? "Bir satir ileri gidildi" : "Bir satir geri gidildi";
 }
+
+void ofApp::playSimulation(){
+	const double speed = simulation.getSpeed();
+	simulation.setSpeed(speed == 0.0 ? 1.0 : std::abs(speed));
+	simulation.play();
+}
+
+void ofApp::pauseSimulation(){ simulation.pause(); }
+
+void ofApp::stopSimulation(){ simulation.stop(); }
 //--------------------------------------------------------------
 void ofApp::drawTextEditor(){
 	const ImGuiWindowFlags editorFlags =
@@ -940,30 +950,33 @@ void ofApp::drawInterface(){
 
 	ImGui::Separator();
 	ImGui::PushButtonRepeat(true);
-	if (ImGui::Button("<<")) {
+	if (ImGui::ArrowButton("##StepBackward", ImGuiDir_Up)) {
 		stepSimulationLine(-1);
 	}
 	ImGui::PopButtonRepeat();
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Geri adim (Yukari Ok)");
 	ImGui::SameLine();
 	if (ImGui::Button("Oynat")) {
-		const double speed = simulation.getSpeed();
-		simulation.setSpeed(speed == 0.0 ? 1.0 : std::abs(speed));
-		simulation.play();
+		playSimulation();
 	}
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Oynat (F5)");
 	ImGui::SameLine();
 	if (ImGui::Button("Duraklat")) {
-		simulation.pause();
+		pauseSimulation();
 	}
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Duraklat (F6)");
 	ImGui::SameLine();
 	if (ImGui::Button("Durdur")) {
-		simulation.stop();
+		stopSimulation();
 	}
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Durdur (F7)");
 	ImGui::SameLine();
 	ImGui::PushButtonRepeat(true);
-	if (ImGui::Button(">>")) {
+	if (ImGui::ArrowButton("##StepForward", ImGuiDir_Down)) {
 		stepSimulationLine(1);
 	}
 	ImGui::PopButtonRepeat();
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Ileri adim (Asagi Ok)");
 	ImGui::SameLine();
 	float speedSlider = simulationSliderFromSpeed(simulation.getSpeed());
 	ImGui::SetNextItemWidth(180.0f);
@@ -1028,7 +1041,13 @@ void ofApp::keyPressed(int key){
 	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
 		(key == 'o' || key == 'O')) {
 		openEditorFile();
+		return;
 	}
+	if (key == OF_KEY_F5) playSimulation();
+	else if (key == OF_KEY_F6) pauseSimulation();
+	else if (key == OF_KEY_F7) stopSimulation();
+	else if (key == OF_KEY_UP) stepSimulationLine(-1);
+	else if (key == OF_KEY_DOWN) stepSimulationLine(1);
 }
 
 //--------------------------------------------------------------
