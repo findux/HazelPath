@@ -11,6 +11,7 @@ struct SceneStateContext {
 	ofRectangle screenRect;
 	ofRectangle renderViewport;
 	bool showRapidToolpaths = true;
+	bool cameraAnimating = false;
 };
 
 class SceneState {

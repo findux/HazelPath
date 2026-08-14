@@ -11,6 +11,7 @@ public:
 	void setScreenRect(const ofRectangle& rectangle);
 	void setRenderViewport(const ofRectangle& viewport);
 	void setRapidVisible(bool visible);
+	void setCameraAnimating(bool animating);
 
 	void addState(std::unique_ptr<SceneState> state);
 	void notifyToolpathChanged();

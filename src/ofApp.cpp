@@ -713,6 +713,7 @@ void ofApp::drawScene(int width, int height){
 	height = std::max(height, 1);
 	sceneStates.setRenderViewport(ofRectangle(0.0f, 0.0f, width, height));
 	sceneStates.setRapidVisible(showRapidToolpaths);
+	sceneStates.setCameraAnimating(viewCubeUsing);
 
 	const bool viewCubeCapturesMouse =
 		viewCubeUsing || viewCubeRect.inside(ofGetMouseX(), ofGetMouseY()) ||
@@ -924,6 +925,7 @@ void ofApp::drawInterface(){
 		sceneMax.x - sceneMin.x,
 		sceneMax.y - sceneMin.y));
 	sceneStates.setRapidVisible(showRapidToolpaths);
+	sceneStates.setCameraAnimating(viewCubeUsing);
 	sceneStates.drawOverlay();
 
 	constexpr float ViewCubeSize = 112.0f;

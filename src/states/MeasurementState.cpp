@@ -226,7 +226,7 @@ void MeasurementState::drawWorld(const SceneStateContext& context) {
 	ensureGeometry(context);
 	ofPushStyle();
 	ofSetLineWidth(3.0f);
-	if (hoverPoint.valid) {
+	if (hoverPoint.valid && !context.cameraAnimating) {
 		drawMotionHighlight(context, hoverPoint.commandIndex);
 	}
 	if (firstPoint) {
@@ -252,7 +252,7 @@ void MeasurementState::drawOverlay(const SceneStateContext& context) {
 	}
 	refreshHover(context);
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	if (hoverPoint.valid) {
+	if (hoverPoint.valid && !context.cameraAnimating) {
 		drawList->AddCircle(
 			ImVec2(hoverPoint.screenPoint.x, hoverPoint.screenPoint.y),
 			6.0f,
@@ -452,6 +452,11 @@ void MeasurementState::rebuildProjection(
 	projectionValid = true;
 }
 void MeasurementState::refreshHover(const SceneStateContext& context) {
+	if (context.cameraAnimating) {
+		hoverPoint = {};
+		hoverDirty = true;
+		return;
+	}
 	const bool projectionChanged = ensureProjection(context);
 	if (!hoverDirty && !projectionChanged) {
 		return;

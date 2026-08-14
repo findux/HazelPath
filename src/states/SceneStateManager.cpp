@@ -19,6 +19,10 @@ void SceneStateManager::setRapidVisible(bool visible) {
 	context.showRapidToolpaths = visible;
 }
 
+void SceneStateManager::setCameraAnimating(bool animating) {
+	context.cameraAnimating = animating;
+}
+
 void SceneStateManager::addState(std::unique_ptr<SceneState> state) {
 	if (state) {
 		states.push_back(std::move(state));
