@@ -11,6 +11,7 @@
 #include <cmath>
 #include <chrono>
 #include <fstream>
+#include <limits>
 #include <utility>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -638,7 +639,48 @@ void ofApp::resetCamera(){
 }
 
 void ofApp::fitCamera() {
-	//cuttingToolpathMesh.get
+	glm::vec3 minimum(std::numeric_limits<float>::max());
+	glm::vec3 maximum(std::numeric_limits<float>::lowest());
+	bool hasBounds = false;
+	const auto includePoint = [&minimum, &maximum, &hasBounds](const glm::vec3& point) {
+		minimum = glm::min(minimum, point);
+		maximum = glm::max(maximum, point);
+		hasBounds = true;
+	};
+	for (const glm::vec3& vertex : cuttingToolpathMesh.getVertices()) includePoint(vertex);
+	if (showRapidToolpaths) {
+		for (const glm::vec3& vertex : rapidToolpathMesh.getVertices()) includePoint(vertex);
+	}
+	for (const char* linkName : {"x_axis", "y_axis", "z_axis"}) {
+		if (const nc::MachineLink* link = currentMachine.findLink(linkName)) {
+			const glm::vec3 position = link->getGlobalPosition();
+			includePoint(position - glm::vec3(15.0f));
+			includePoint(position + glm::vec3(15.0f));
+		}
+	}
+	if (!hasBounds) {
+		statusMessage = "Sahneye sigdirilacak nesne yok";
+		return;
+	}
+
+	const glm::vec3 center = (minimum + maximum) * 0.5f;
+	const float radius = std::max(glm::length(maximum - minimum) * 0.5f, 1.0f);
+	const ofRectangle& viewport = camera.getControlArea();
+	const float width = std::max(viewport.width, 1.0f);
+	const float height = std::max(viewport.height, 1.0f);
+	const float margin = 1.15f;
+	if (camera.getOrtho()) {
+		camera.setTarget(center);
+		camera.setDistance(std::max(radius * 4.0f, 100.0f));
+		camera.setOrthoZoom(std::min(width, height) / (2.0f * radius * margin));
+	} else {
+		const float verticalHalfFov = glm::radians(camera.getFov()) * 0.5f;
+		const float horizontalHalfFov = std::atan(std::tan(verticalHalfFov) * width / height);
+		const float limitingHalfFov = std::min(verticalHalfFov, horizontalHalfFov);
+		camera.setTarget(center);
+		camera.setDistance(radius * margin / std::sin(limitingHalfFov));
+	}
+	statusMessage = "Sahne kameraya sigdirildi";
 }
 
 //--------------------------------------------------------------
@@ -779,6 +821,9 @@ void ofApp::drawInterface(){
 				resetCamera();
 
 				statusMessage = "Kamera sifirlandi";
+			}
+			if (ImGui::MenuItem("Sahneyi kameraya sigdir")) {
+				fitCamera();
 			}
 			if (ImGui::MenuItem("Rapid takim yollarini goster", nullptr, &showRapidToolpaths)) {
 				statusMessage = showRapidToolpaths
