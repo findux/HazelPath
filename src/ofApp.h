@@ -35,6 +35,7 @@ class ofApp : public ofBaseApp{
 	private:
 		void resetCamera();
 		void fitCamera();
+		void updateWindowTitle();
 		void interpretEditorText();
 		void updateInterpretation();
 		void rebuildToolpathMesh();
@@ -75,5 +76,6 @@ class ofApp : public ofBaseApp{
 		int previousEditorCursorLine = -1;
 		bool editorDocumentDirty = false;
 		std::string editorFilePath;
+		std::string currentWindowTitle;
 		std::string statusMessage = "Hazir";
 };

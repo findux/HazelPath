@@ -688,6 +688,18 @@ void ofApp::fitCamera() {
 	statusMessage = "Sahne kameraya sigdirildi";
 }
 
+void ofApp::updateWindowTitle() {
+	const std::string documentName = editorFilePath.empty()
+		? "Adsiz"
+		: ofFilePath::getFileName(editorFilePath);
+	const std::string title = "HazelPath - " + documentName +
+		(editorDocumentDirty ? " *" : "");
+	if (title != currentWindowTitle) {
+		currentWindowTitle = title;
+		ofSetWindowTitle(currentWindowTitle);
+	}
+}
+
 //--------------------------------------------------------------
 void ofApp::update(){
 	updateInterpretation();
@@ -779,6 +791,7 @@ void ofApp::drawScene(int width, int height){
 
 //--------------------------------------------------------------
 void ofApp::drawInterface(){
+	updateWindowTitle();
 	syncEditorToSimulation();
 
 	const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -838,10 +851,7 @@ void ofApp::drawInterface(){
 			}
 			ImGui::EndMenu();
 		}
-		ImGui::SameLine();
-		const std::string documentName = editorFilePath.empty() ? "Adsiz" : ofFilePath::getFileName(editorFilePath);
-		ImGui::TextUnformatted((documentName + (editorDocumentDirty ? " *" : "")).c_str());
-		ImGui::SameLine();
+
 		// debug
 		//static char str0[128] = "Hello, world!";
 		//ImGui::InputText("Position", str0, IM_ARRAYSIZE(str0));
@@ -903,6 +913,11 @@ void ofApp::drawInterface(){
 			statusMessage = "Kamera ortho modunda";
 		}
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Sigdir", ImVec2(0.0f, 24.0f))) {
+		fitCamera();
+	}
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Sahneyi kameraya sigdir");
 	ImGui::SameLine();
 	sceneStates.drawToolbar();
 	ImGui::Separator();
