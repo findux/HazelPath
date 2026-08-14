@@ -196,6 +196,7 @@ void MeasurementState::ensureToolbarIcon() {
 
 void MeasurementState::onEnter(const SceneStateContext& context) {
 	exitRequested = false;
+	hoverDirty = true;
 	pressedMouseButton = -1;
 	mouseDraggedSincePress = false;
 	clearSelection();
@@ -238,7 +239,11 @@ void MeasurementState::drawWorld(const SceneStateContext& context) {
 }
 
 void MeasurementState::drawOverlay(const SceneStateContext& context) {
-	mousePosition = glm::vec2(ofGetMouseX(), ofGetMouseY());
+	const glm::vec2 currentMouse(ofGetMouseX(), ofGetMouseY());
+	if (currentMouse != mousePosition) {
+		mousePosition = currentMouse;
+		hoverDirty = true;
+	}
 	refreshHover(context);
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
 	if (hoverPoint.valid) {
@@ -278,7 +283,7 @@ bool MeasurementState::keyPressed(const SceneStateContext&, int key) {
 
 bool MeasurementState::mouseMoved(const SceneStateContext& context, int x, int y) {
 	mousePosition = glm::vec2(x, y);
-	refreshHover(context);
+	hoverDirty = true;
 	return context.screenRect.inside(x, y);
 }
 
@@ -288,7 +293,7 @@ bool MeasurementState::mouseDragged(const SceneStateContext& context, int x, int
 		glm::distance(mousePosition, mousePressPosition) > ClickDragThresholdPixels) {
 		mouseDraggedSincePress = true;
 	}
-	refreshHover(context);
+	hoverDirty = true;
 	return false;
 }
 
@@ -307,6 +312,7 @@ bool MeasurementState::mousePressed(const SceneStateContext& context, int x, int
 
 bool MeasurementState::mouseReleased(const SceneStateContext& context, int x, int y, int button) {
 	mousePosition = glm::vec2(x, y);
+	hoverDirty = true;
 	const bool isClick = button == pressedMouseButton && !mouseDraggedSincePress &&
 		context.screenRect.inside(x, y);
 	pressedMouseButton = -1;
@@ -350,6 +356,7 @@ void MeasurementState::clearSelection() {
 void MeasurementState::markGeometryDirty() {
 	geometryDirty = true;
 	projectionValid = false;
+	hoverDirty = true;
 }
 
 void MeasurementState::ensureGeometry(const SceneStateContext& context) {
@@ -392,13 +399,13 @@ void MeasurementState::rebuildGeometry(const SceneStateContext& context) {
 	}
 }
 
-void MeasurementState::ensureProjection(const SceneStateContext& context) {
+bool MeasurementState::ensureProjection(const SceneStateContext& context) {
 	ensureGeometry(context);
 	if (!context.camera || context.renderViewport.width <= 0.0f ||
 		context.renderViewport.height <= 0.0f || context.screenRect.width <= 0.0f ||
 		context.screenRect.height <= 0.0f) {
 		projectionValid = false;
-		return;
+		return false;
 	}
 	const glm::mat4 viewProjection =
 		context.camera->getModelViewProjectionMatrix(context.renderViewport);
@@ -406,9 +413,10 @@ void MeasurementState::ensureProjection(const SceneStateContext& context) {
 		rectanglesDiffer(context.screenRect, cachedScreenRect) ||
 		rectanglesDiffer(context.renderViewport, cachedRenderViewport)) {
 		rebuildProjection(context, viewProjection);
+		return true;
 	}
+	return false;
 }
-
 void MeasurementState::rebuildProjection(
 	const SceneStateContext& context,
 	const glm::mat4& viewProjection) {
@@ -427,8 +435,12 @@ void MeasurementState::rebuildProjection(
 }
 
 void MeasurementState::refreshHover(const SceneStateContext& context) {
-	ensureProjection(context);
+	const bool projectionChanged = ensureProjection(context);
+	if (!hoverDirty && !projectionChanged) {
+		return;
+	}
 	hoverPoint = findSnap(context, mousePosition);
+	hoverDirty = false;
 }
 
 MeasurementState::SnapPoint MeasurementState::findSnap(

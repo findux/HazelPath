@@ -51,7 +51,7 @@ private:
 	void markGeometryDirty();
 	void ensureGeometry(const SceneStateContext& context);
 	void rebuildGeometry(const SceneStateContext& context);
-	void ensureProjection(const SceneStateContext& context);
+	bool ensureProjection(const SceneStateContext& context);
 	void rebuildProjection(const SceneStateContext& context, const glm::mat4& viewProjection);
 	void refreshHover(const SceneStateContext& context);
 	SnapPoint findSnap(const SceneStateContext& context, const glm::vec2& mouse) const;
@@ -73,6 +73,7 @@ private:
 	ofRectangle cachedRenderViewport;
 	bool geometryDirty = true;
 	bool projectionValid = false;
+	bool hoverDirty = true;
 	bool exitRequested = false;
 	bool toolbarIconLoadAttempted = false;
 	bool mouseDraggedSincePress = false;
