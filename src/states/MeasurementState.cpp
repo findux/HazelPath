@@ -11,6 +11,7 @@ namespace {
 constexpr float SnapDistancePixels = 14.0f;
 constexpr float SnapGridCellPixels = 32.0f;
 constexpr float ClickDragThresholdPixels = 4.0f;
+constexpr float OverlappingEndpointTolerancePixels = 2.0f;
 constexpr double TwoPi = 6.28318530717958647692;
 
 glm::vec3 worldPoint(const nc::AxisPosition& position, float scale) {
@@ -337,11 +338,16 @@ bool MeasurementState::mouseReleased(const SceneStateContext& context, int x, in
 	if (!hoverPoint.valid) {
 		return true;
 	}
+	const SnapPoint selectedPoint = hoverPoint;
 	if (!firstPoint || secondPoint) {
-		firstPoint = hoverPoint;
+		firstPoint = selectedPoint;
 		secondPoint.reset();
 	} else {
-		secondPoint = hoverPoint;
+		secondPoint = selectedPoint;
+	}
+	if (hoverCandidates.size() > 1) {
+		hoverCandidateIndex = (hoverCandidateIndex + 1) % hoverCandidates.size();
+		hoverPoint = hoverCandidates[hoverCandidateIndex];
 	}
 	return true;
 }
@@ -454,6 +460,8 @@ void MeasurementState::rebuildProjection(
 void MeasurementState::refreshHover(const SceneStateContext& context) {
 	if (context.cameraAnimating) {
 		hoverPoint = {};
+		hoverCandidates.clear();
+		hoverCandidateIndex = 0;
 		hoverDirty = true;
 		return;
 	}
@@ -461,17 +469,18 @@ void MeasurementState::refreshHover(const SceneStateContext& context) {
 	if (!hoverDirty && !projectionChanged) {
 		return;
 	}
-	hoverPoint = findSnap(context, mousePosition);
+	hoverCandidates = findSnapCandidates(context, mousePosition);
+	hoverCandidateIndex = 0;
+	hoverPoint = hoverCandidates.empty() ? SnapPoint{} : hoverCandidates.front();
 	hoverDirty = false;
 }
 
-MeasurementState::SnapPoint MeasurementState::findSnap(
+std::vector<MeasurementState::SnapPoint> MeasurementState::findSnapCandidates(
 	const SceneStateContext& context,
 	const glm::vec2& mouse) const {
-	SnapPoint result;
-	result.pixelDistance = std::numeric_limits<float>::max();
+	std::vector<SnapPoint> candidates;
 	if (!projectionValid || !context.toolpath || !context.screenRect.inside(mouse)) {
-		return result;
+		return candidates;
 	}
 
 	const int mouseCellX = static_cast<int>(std::floor(mouse.x / SnapGridCellPixels));
@@ -485,19 +494,36 @@ MeasurementState::SnapPoint MeasurementState::findSnap(
 				const PathEndpoint& endpoint = pathEndpoints[index];
 				if (endpoint.rapid && !context.showRapidToolpaths) continue;
 				const float distance = glm::distance(mouse, screen.point);
-				if (distance < result.pixelDistance && distance <= SnapDistancePixels) {
-					result.valid = true;
-					result.modelPoint = endpoint.modelPoint;
-					result.worldPoint = endpoint.worldPoint;
-					result.screenPoint = screen.point;
-					result.commandIndex = endpoint.commandIndex;
-					result.commandT = endpoint.commandT;
-					result.pixelDistance = distance;
-				}
+				if (distance > SnapDistancePixels) continue;
+				SnapPoint candidate;
+				candidate.valid = true;
+				candidate.modelPoint = endpoint.modelPoint;
+				candidate.worldPoint = endpoint.worldPoint;
+				candidate.screenPoint = screen.point;
+				candidate.commandIndex = endpoint.commandIndex;
+				candidate.commandT = endpoint.commandT;
+				candidate.pixelDistance = distance;
+				candidates.push_back(candidate);
 			}
 		}
 	}
-	return result;
+	std::sort(candidates.begin(), candidates.end(), [](const SnapPoint& a, const SnapPoint& b) {
+		if (a.pixelDistance != b.pixelDistance) return a.pixelDistance < b.pixelDistance;
+		return a.commandIndex < b.commandIndex;
+	});
+	if (candidates.empty()) return candidates;
+	const glm::vec2 nearestPoint = candidates.front().screenPoint;
+	candidates.erase(
+		std::remove_if(candidates.begin(), candidates.end(), [&](const SnapPoint& candidate) {
+			return glm::distance(candidate.screenPoint, nearestPoint) > OverlappingEndpointTolerancePixels;
+		}),
+		candidates.end());
+	candidates.erase(
+		std::unique(candidates.begin(), candidates.end(), [](const SnapPoint& a, const SnapPoint& b) {
+			return a.commandIndex == b.commandIndex;
+		}),
+		candidates.end());
+	return candidates;
 }
 glm::vec2 MeasurementState::screenPosition(
 	const SceneStateContext& context,

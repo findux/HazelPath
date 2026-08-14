@@ -56,7 +56,7 @@ private:
 	bool ensureProjection(const SceneStateContext& context);
 	void rebuildProjection(const SceneStateContext& context, const glm::mat4& viewProjection);
 	void refreshHover(const SceneStateContext& context);
-	SnapPoint findSnap(const SceneStateContext& context, const glm::vec2& mouse) const;
+	std::vector<SnapPoint> findSnapCandidates(const SceneStateContext& context, const glm::vec2& mouse) const;
 	glm::vec2 screenPosition(const SceneStateContext& context, const glm::vec3& world, float* depth = nullptr) const;
 	void drawMotionHighlight(const SceneStateContext& context, std::size_t commandIndex) const;
 	void drawInfoPanel(const SceneStateContext& context, ImDrawList* drawList) const;
@@ -69,6 +69,8 @@ private:
 	std::optional<SnapPoint> firstPoint;
 	std::optional<SnapPoint> secondPoint;
 	SnapPoint hoverPoint;
+	std::vector<SnapPoint> hoverCandidates;
+	std::size_t hoverCandidateIndex = 0;
 	glm::vec2 mousePosition{0.0f};
 	glm::vec2 mousePressPosition{0.0f};
 	glm::mat4 cachedViewProjection{1.0f};
