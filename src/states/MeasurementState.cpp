@@ -9,6 +9,7 @@
 namespace {
 
 constexpr float SnapDistancePixels = 14.0f;
+constexpr float SnapGridCellPixels = 32.0f;
 constexpr float ClickDragThresholdPixels = 4.0f;
 constexpr double TwoPi = 6.28318530717958647692;
 
@@ -126,6 +127,11 @@ bool matricesDiffer(const glm::mat4& a, const glm::mat4& b) {
 
 bool rectanglesDiffer(const ofRectangle& a, const ofRectangle& b) {
 	return a.x != b.x || a.y != b.y || a.width != b.width || a.height != b.height;
+}
+
+std::int64_t snapGridKey(int x, int y) {
+	return (static_cast<std::int64_t>(x) << 32) |
+		static_cast<std::uint32_t>(y);
 }
 
 std::string positionText(const nc::AxisPosition& position) {
@@ -368,6 +374,7 @@ void MeasurementState::ensureGeometry(const SceneStateContext& context) {
 void MeasurementState::rebuildGeometry(const SceneStateContext& context) {
 	pathEndpoints.clear();
 	screenEndpoints.clear();
+	screenGrid.clear();
 	geometryDirty = false;
 	projectionValid = false;
 	if (!context.toolpath) {
@@ -422,18 +429,28 @@ void MeasurementState::rebuildProjection(
 	const glm::mat4& viewProjection) {
 	screenEndpoints.clear();
 	screenEndpoints.reserve(pathEndpoints.size());
-	for (const PathEndpoint& endpoint : pathEndpoints) {
+	screenGrid.clear();
+	for (std::size_t index = 0; index < pathEndpoints.size(); ++index) {
+		const PathEndpoint& endpoint = pathEndpoints[index];
 		float depth = 0.0f;
 		const glm::vec2 point = screenPosition(context, endpoint.worldPoint, &depth);
 		const bool visible = depth >= -1.0f && depth <= 1.0f;
 		screenEndpoints.push_back({point, visible});
+		if (visible &&
+			point.x >= context.screenRect.x - SnapDistancePixels &&
+			point.x <= context.screenRect.getRight() + SnapDistancePixels &&
+			point.y >= context.screenRect.y - SnapDistancePixels &&
+			point.y <= context.screenRect.getBottom() + SnapDistancePixels) {
+			const int cellX = static_cast<int>(std::floor(point.x / SnapGridCellPixels));
+			const int cellY = static_cast<int>(std::floor(point.y / SnapGridCellPixels));
+			screenGrid[snapGridKey(cellX, cellY)].push_back(index);
+		}
 	}
 	cachedViewProjection = viewProjection;
 	cachedScreenRect = context.screenRect;
 	cachedRenderViewport = context.renderViewport;
 	projectionValid = true;
 }
-
 void MeasurementState::refreshHover(const SceneStateContext& context) {
 	const bool projectionChanged = ensureProjection(context);
 	if (!hoverDirty && !projectionChanged) {
@@ -452,27 +469,31 @@ MeasurementState::SnapPoint MeasurementState::findSnap(
 		return result;
 	}
 
-	for (std::size_t index = 0; index < pathEndpoints.size(); ++index) {
-		const ScreenEndpoint& screen = screenEndpoints[index];
-		const PathEndpoint& endpoint = pathEndpoints[index];
-		if (!screen.visible || (endpoint.rapid && !context.showRapidToolpaths)) {
-			continue;
-		}
-
-		const float distance = glm::distance(mouse, screen.point);
-		if (distance < result.pixelDistance && distance <= SnapDistancePixels) {
-			result.valid = true;
-			result.modelPoint = endpoint.modelPoint;
-			result.worldPoint = endpoint.worldPoint;
-			result.screenPoint = screen.point;
-			result.commandIndex = endpoint.commandIndex;
-			result.commandT = endpoint.commandT;
-			result.pixelDistance = distance;
+	const int mouseCellX = static_cast<int>(std::floor(mouse.x / SnapGridCellPixels));
+	const int mouseCellY = static_cast<int>(std::floor(mouse.y / SnapGridCellPixels));
+	for (int cellY = mouseCellY - 1; cellY <= mouseCellY + 1; ++cellY) {
+		for (int cellX = mouseCellX - 1; cellX <= mouseCellX + 1; ++cellX) {
+			const auto cell = screenGrid.find(snapGridKey(cellX, cellY));
+			if (cell == screenGrid.end()) continue;
+			for (const std::size_t index : cell->second) {
+				const ScreenEndpoint& screen = screenEndpoints[index];
+				const PathEndpoint& endpoint = pathEndpoints[index];
+				if (endpoint.rapid && !context.showRapidToolpaths) continue;
+				const float distance = glm::distance(mouse, screen.point);
+				if (distance < result.pixelDistance && distance <= SnapDistancePixels) {
+					result.valid = true;
+					result.modelPoint = endpoint.modelPoint;
+					result.worldPoint = endpoint.worldPoint;
+					result.screenPoint = screen.point;
+					result.commandIndex = endpoint.commandIndex;
+					result.commandT = endpoint.commandT;
+					result.pixelDistance = distance;
+				}
+			}
 		}
 	}
 	return result;
 }
-
 glm::vec2 MeasurementState::screenPosition(
 	const SceneStateContext& context,
 	const glm::vec3& world,

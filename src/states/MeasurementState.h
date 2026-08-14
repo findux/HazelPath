@@ -3,7 +3,9 @@
 #include "SceneState.h"
 
 #include <optional>
+#include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class MeasurementState final : public SceneState {
@@ -63,6 +65,7 @@ private:
 
 	std::vector<PathEndpoint> pathEndpoints;
 	std::vector<ScreenEndpoint> screenEndpoints;
+	std::unordered_map<std::int64_t, std::vector<std::size_t>> screenGrid;
 	std::optional<SnapPoint> firstPoint;
 	std::optional<SnapPoint> secondPoint;
 	SnapPoint hoverPoint;
