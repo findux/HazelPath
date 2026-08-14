@@ -42,6 +42,8 @@ class ofApp : public ofBaseApp{
 		void rebuildToolpathEditorLines();
 		void syncEditorToSimulation();
 		void jumpSimulationToEditorLine(int editorLine);
+		void jumpToToolpathCommand(std::size_t commandIndex);
+		std::size_t findToolpathCommandAtScreenPoint(const glm::vec2& point) const;
 		void stepSimulationLine(int direction);
 		void playSimulation();
 		void pauseSimulation();
@@ -67,6 +69,8 @@ class ofApp : public ofBaseApp{
 		std::vector<int> toolpathEditorLines;
 		std::future<nc::NcImportResult> importFuture;
 		ofRectangle viewCubeRect;
+		ofRectangle sceneScreenRect;
+		ofRectangle sceneRenderViewport;
 
 		float splitRatio = 0.2f;
 		bool showRapidToolpaths = true;
@@ -78,4 +82,7 @@ class ofApp : public ofBaseApp{
 		std::string editorFilePath;
 		std::string currentWindowTitle;
 		std::string statusMessage = "Hazir";
+		glm::vec2 sceneMousePressPosition{0.0f};
+		glm::vec2 lastSceneClickPosition{0.0f};
+		std::uint64_t lastSceneClickMillis = 0;
 };

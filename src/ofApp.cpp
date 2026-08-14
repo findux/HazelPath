@@ -405,6 +405,81 @@ void ofApp::jumpSimulationToEditorLine(int editorLine){
 }
 
 //--------------------------------------------------------------
+void ofApp::jumpToToolpathCommand(std::size_t commandIndex){
+	if (commandIndex >= currentToolpath.size() ||
+		commandIndex >= toolpathEditorLines.size()) {
+		return;
+	}
+	const int editorLine = toolpathEditorLines[commandIndex];
+	if (editorLine < 0) {
+		return;
+	}
+	simulation.pause();
+	simulation.seekToCommand(commandIndex, 0.0);
+	editorSimulationLine = editorLine;
+	const TextEditor::Coordinates position(editorLine, 0);
+	textEditor.SetCursorPosition(position);
+	textEditor.SetSelection(position, position);
+	statusMessage = "Takim yolu satir " + ofToString(editorLine + 1) + " ile eslestirildi";
+}
+
+//--------------------------------------------------------------
+std::size_t ofApp::findToolpathCommandAtScreenPoint(const glm::vec2& point) const {
+	constexpr float PickDistancePixels = 8.0f;
+	std::size_t result = currentToolpath.size();
+	float bestDistance = PickDistancePixels;
+	if (!sceneScreenRect.inside(point) || sceneRenderViewport.width <= 0.0f ||
+		sceneRenderViewport.height <= 0.0f) {
+		return result;
+	}
+	const float unitScale = currentToolpath.units == nc::Units::Inches ? 25.4f : 1.0f;
+	const auto screenPoint = [&](const nc::AxisPosition& position) {
+		const glm::vec3 world(
+			static_cast<float>(position.x) * unitScale,
+			static_cast<float>(position.y) * unitScale,
+			static_cast<float>(position.z) * unitScale);
+		const glm::vec3 rendered = camera.worldToScreen(world, sceneRenderViewport);
+		return glm::vec2(
+			sceneScreenRect.x + rendered.x / sceneRenderViewport.width * sceneScreenRect.width,
+			sceneScreenRect.y + rendered.y / sceneRenderViewport.height * sceneScreenRect.height);
+	};
+	const auto testSegment = [&](std::size_t commandIndex, const glm::vec2& a, const glm::vec2& b) {
+		const glm::vec2 ab = b - a;
+		const float lengthSquared = glm::dot(ab, ab);
+		const float t = lengthSquared > 0.0f
+			? ofClamp(glm::dot(point - a, ab) / lengthSquared, 0.0f, 1.0f)
+			: 0.0f;
+		const float distance = glm::distance(point, a + ab * t);
+		if (distance < bestDistance) {
+			bestDistance = distance;
+			result = commandIndex;
+		}
+	};
+	for (std::size_t index = 0; index < currentToolpath.size(); ++index) {
+		const nc::ToolpathCommand& command = currentToolpath.getCommandRef(index);
+		if (command.type == nc::MotionType::Rapid && !showRapidToolpaths) {
+			continue;
+		}
+		if (command.type == nc::MotionType::Rapid ||
+			command.type == nc::MotionType::Linear) {
+			testSegment(index, screenPoint(command.start), screenPoint(command.end));
+		} else if (command.type == nc::MotionType::ArcClockwise ||
+			command.type == nc::MotionType::ArcCounterClockwise) {
+			const int segmentCount =
+				nc::MotionInterpolator::arcSegmentCount(command, unitScale);
+			nc::AxisPosition previous = command.start;
+			for (int segment = 1; segment <= segmentCount; ++segment) {
+				const nc::AxisPosition current = nc::MotionInterpolator::sample(
+					command, static_cast<double>(segment) / segmentCount);
+				testSegment(index, screenPoint(previous), screenPoint(current));
+				previous = current;
+			}
+		}
+	}
+	return result;
+}
+
+//--------------------------------------------------------------
 void ofApp::stepSimulationLine(int direction){
 	if (direction == 0 || currentToolpath.empty() || toolpathEditorLines.empty()) {
 		return;
@@ -723,6 +798,7 @@ void ofApp::update(){
 void ofApp::drawScene(int width, int height){
 	width = std::max(width, 1);
 	height = std::max(height, 1);
+	sceneRenderViewport.set(0.0f, 0.0f, width, height);
 	sceneStates.setRenderViewport(ofRectangle(0.0f, 0.0f, width, height));
 	sceneStates.setRapidVisible(showRapidToolpaths);
 	sceneStates.setCameraAnimating(viewCubeUsing);
@@ -939,6 +1015,11 @@ void ofApp::drawInterface(){
 		sceneMin.y,
 		sceneMax.x - sceneMin.x,
 		sceneMax.y - sceneMin.y));
+	sceneScreenRect.set(
+		sceneMin.x,
+		sceneMin.y,
+		sceneMax.x - sceneMin.x,
+		sceneMax.y - sceneMin.y);
 	sceneStates.setRapidVisible(showRapidToolpaths);
 	sceneStates.setCameraAnimating(viewCubeUsing);
 	sceneStates.drawOverlay();
@@ -1071,8 +1152,36 @@ void ofApp::keyPressed(int key){
 void ofApp::keyReleased(int key){ sceneStates.keyReleased(key); }
 void ofApp::mouseMoved(int x, int y){ sceneStates.mouseMoved(x, y); }
 void ofApp::mouseDragged(int x, int y, int button){ sceneStates.mouseDragged(x, y, button); }
-void ofApp::mousePressed(int x, int y, int button){ sceneStates.mousePressed(x, y, button); }
-void ofApp::mouseReleased(int x, int y, int button){ sceneStates.mouseReleased(x, y, button); }
+void ofApp::mousePressed(int x, int y, int button){
+	if (button == OF_MOUSE_BUTTON_LEFT) {
+		sceneMousePressPosition = glm::vec2(x, y);
+	}
+	sceneStates.mousePressed(x, y, button);
+}
+void ofApp::mouseReleased(int x, int y, int button){
+	sceneStates.mouseReleased(x, y, button);
+	if (button != OF_MOUSE_BUTTON_LEFT) {
+		return;
+	}
+	const glm::vec2 point(x, y);
+	if (!sceneScreenRect.inside(point) || viewCubeRect.inside(point) ||
+		glm::distance(point, sceneMousePressPosition) > 4.0f) {
+		return;
+	}
+	const std::uint64_t now = ofGetElapsedTimeMillis();
+	const bool doubleClicked =
+		lastSceneClickMillis > 0 && now - lastSceneClickMillis <= 400 &&
+		glm::distance(point, lastSceneClickPosition) <= 4.0f;
+	lastSceneClickMillis = doubleClicked ? 0 : now;
+	lastSceneClickPosition = point;
+	if (!doubleClicked) {
+		return;
+	}
+	const std::size_t commandIndex = findToolpathCommandAtScreenPoint(point);
+	if (commandIndex < currentToolpath.size()) {
+		jumpToToolpathCommand(commandIndex);
+	}
+}
 void ofApp::mouseEntered(int x, int y){}
 void ofApp::mouseExited(int x, int y){}
 void ofApp::windowResized(int w, int h){}

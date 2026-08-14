@@ -318,8 +318,11 @@ bool MeasurementState::mousePressed(const SceneStateContext& context, int x, int
 }
 
 bool MeasurementState::mouseReleased(const SceneStateContext& context, int x, int y, int button) {
-	mousePosition = glm::vec2(x, y);
-	hoverDirty = true;
+	const glm::vec2 releasePosition(x, y);
+	if (releasePosition != mousePosition) {
+		mousePosition = releasePosition;
+		hoverDirty = true;
+	}
 	const bool isClick = button == pressedMouseButton && !mouseDraggedSincePress &&
 		context.screenRect.inside(x, y);
 	pressedMouseButton = -1;
@@ -339,7 +342,12 @@ bool MeasurementState::mouseReleased(const SceneStateContext& context, int x, in
 		return true;
 	}
 	const SnapPoint selectedPoint = hoverPoint;
-	if (!firstPoint || secondPoint) {
+
+	const bool cyclingSharedEndpoint =
+		firstPoint && !secondPoint && hoverCandidates.size() > 1 &&
+		glm::distance(firstPoint->screenPoint, selectedPoint.screenPoint) <=
+			OverlappingEndpointTolerancePixels;
+	if (!firstPoint || secondPoint || cyclingSharedEndpoint) {
 		firstPoint = selectedPoint;
 		secondPoint.reset();
 	} else {
