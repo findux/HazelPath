@@ -835,7 +835,7 @@ void ofApp::drawScene(int width, int height){
 	ofDrawAxis(150.0f);
 	ofPushStyle();
 	ofSetColor(255);
-	ofSetLineWidth(2.5f);
+	ofSetLineWidth(1.0f);
 	if (showRapidToolpaths) {
 		rapidToolpathMesh.draw();
 	}
