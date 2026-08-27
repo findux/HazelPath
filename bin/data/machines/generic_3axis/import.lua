@@ -19,7 +19,7 @@ local function plane_coordinates(position, plane)
     if plane == ArcPlane.XY then
         return position.x, position.y
     elseif plane == ArcPlane.XZ then
-        return position.x, position.z
+        return position.z, position.x
     end
     return position.y, position.z
 end
@@ -30,8 +30,8 @@ local function position_with_plane_coordinates(position, plane, u, v)
         result.x = u
         result.y = v
     elseif plane == ArcPlane.XZ then
-        result.x = u
-        result.z = v
+        result.z = u
+        result.x = v
     else
         result.y = u
         result.z = v

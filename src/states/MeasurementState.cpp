@@ -34,8 +34,8 @@ void planeCoordinates(
 		perpendicular = position.z;
 		break;
 	case nc::ArcPlane::XZ:
-		u = position.x;
-		v = position.z;
+		u = position.z;
+		v = position.x;
 		perpendicular = position.y;
 		break;
 	case nc::ArcPlane::YZ:
