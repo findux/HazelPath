@@ -826,7 +826,11 @@ void ofApp::drawScene(int width, int height){
 	}
 
 	sceneFbo.begin();
-	ofClear(25, 27, 32, 255);
+	ofClear(0, 0, 0, 255);
+	ofBackgroundGradient(
+		ofColor(41, 47, 65),
+		ofColor(14, 16, 24),
+		OF_GRADIENT_LINEAR);
 	ofEnableDepthTest();
 
 	camera.begin();
