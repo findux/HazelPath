@@ -193,9 +193,7 @@ void MeasurementState::ensureToolbarIcon() {
 		return;
 	}
 	toolbarIconLoadAttempted = true;
-	const std::string iconPath = ofFilePath::join(
-		ofFilePath::getCurrentExeDir(),
-		"../res/kumpas.png");
+	const std::string iconPath = ofToDataPath("kumpas.png", true);
 	if (!toolbarIcon.load(iconPath)) {
 		ofLogWarning("MeasurementState") << "Kumpas ikonu yuklenemedi: " << iconPath;
 	}

@@ -1,0 +1,72 @@
+Unicode True
+
+!define APP_NAME "HazelPath"
+!define APP_VERSION "1.0.0"
+!define APP_PUBLISHER "HazelPath"
+!define APP_EXE "HazelPath.exe"
+!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
+
+Name "${APP_NAME}"
+OutFile "..\dist\HazelPath-Setup-x64.exe"
+InstallDir "$PROGRAMFILES64\${APP_NAME}"
+InstallDirRegKey HKLM "Software\${APP_NAME}" "InstallDir"
+RequestExecutionLevel admin
+SetCompressor /SOLID lzma
+ShowInstDetails show
+ShowUninstDetails show
+
+VIProductVersion "1.0.0.0"
+VIAddVersionKey "ProductName" "${APP_NAME}"
+VIAddVersionKey "CompanyName" "${APP_PUBLISHER}"
+VIAddVersionKey "LegalCopyright" "Copyright ${APP_PUBLISHER}"
+VIAddVersionKey "FileDescription" "${APP_NAME} x64 Kurulum"
+VIAddVersionKey "FileVersion" "${APP_VERSION}"
+VIAddVersionKey "ProductVersion" "${APP_VERSION}"
+
+Page directory
+Page instfiles
+UninstPage uninstConfirm
+UninstPage instfiles
+
+Section "HazelPath" SEC_MAIN
+  SetShellVarContext all
+  SetOutPath "$INSTDIR"
+  File "..\bin\HazelPath.exe"
+  File "runtime\msvcp140.dll"
+  File "runtime\vcruntime140.dll"
+  File "runtime\vcruntime140_1.dll"
+
+  SetOutPath "$INSTDIR\data"
+  File /r "..\bin\data\*.*"
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+  WriteRegStr HKLM "Software\${APP_NAME}" "InstallDir" "$INSTDIR"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayName" "${APP_NAME}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayVersion" "${APP_VERSION}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "Publisher" "${APP_PUBLISHER}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\${APP_EXE}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+  WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoModify" 1
+  WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoRepair" 1
+
+  CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+  CreateShortcut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
+  CreateShortcut "$SMPROGRAMS\${APP_NAME}\HazelPath Kaldir.lnk" "$INSTDIR\Uninstall.exe"
+  CreateShortcut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
+SectionEnd
+
+Section "Uninstall"
+  SetShellVarContext all
+  Delete "$DESKTOP\${APP_NAME}.lnk"
+  RMDir /r "$SMPROGRAMS\${APP_NAME}"
+  DeleteRegKey HKLM "${UNINSTALL_KEY}"
+  DeleteRegKey HKLM "Software\${APP_NAME}"
+  RMDir /r "$INSTDIR\data"
+  Delete "$INSTDIR\msvcp140.dll"
+  Delete "$INSTDIR\vcruntime140.dll"
+  Delete "$INSTDIR\vcruntime140_1.dll"
+  Delete "$INSTDIR\${APP_EXE}"
+  Delete "$INSTDIR\Uninstall.exe"
+  RMDir "$INSTDIR"
+SectionEnd
