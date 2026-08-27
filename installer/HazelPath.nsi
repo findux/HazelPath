@@ -1,5 +1,8 @@
 Unicode True
 
+!include "LogicLib.nsh"
+!include "WordFunc.nsh"
+
 !define APP_NAME "HazelPath"
 !define APP_VERSION "1.0.0"
 !define APP_PUBLISHER "HazelPath"
@@ -22,6 +25,20 @@ VIAddVersionKey "LegalCopyright" "Copyright ${APP_PUBLISHER}"
 VIAddVersionKey "FileDescription" "${APP_NAME} x64 Kurulum"
 VIAddVersionKey "FileVersion" "${APP_VERSION}"
 VIAddVersionKey "ProductVersion" "${APP_VERSION}"
+
+Function .onInit
+  ReadRegStr $0 HKLM "${UNINSTALL_KEY}" "DisplayVersion"
+  ${If} $0 != ""
+    ${VersionCompare} "$0" "${APP_VERSION}" $1
+    ${If} $1 == 1
+      MessageBox MB_ICONSTOP|MB_OK "Yuklu HazelPath surumu ($0), bu kurulumdan (${APP_VERSION}) daha yeni.$\r$\nKurulum iptal edildi."
+      Abort
+    ${ElseIf} $1 == 0
+      MessageBox MB_ICONQUESTION|MB_YESNO "HazelPath ${APP_VERSION} zaten kurulu.$\r$\nYeniden kurmak istiyor musunuz?" IDYES +2
+      Abort
+    ${EndIf}
+  ${EndIf}
+FunctionEnd
 
 Page directory
 Page instfiles
