@@ -220,6 +220,7 @@ void ofApp::setup(){
 
 	
 	camera.enableMouseInput();
+	camera.enableOrtho();
 	resetCamera();
 }
 
