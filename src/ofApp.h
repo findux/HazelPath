@@ -12,6 +12,7 @@
 #include "camera/OrbitCameraController.h"
 #include "states/SceneStateManager.h"
 
+#include <array>
 #include <future>
 #include <memory>
 #include <vector>
@@ -54,6 +55,11 @@ class ofApp : public ofBaseApp{
 		void pauseSimulation();
 		void stopSimulation();
 		void drawTextEditor();
+		void drawFindDialog();
+		bool findInEditor(bool forward);
+		void replaceCurrentFind();
+		void replaceAllFind();
+		void rememberFindQuery();
 		bool loadEditorFile(const std::string& path);
 		void openEditorFile();
 		bool saveEditorText();
@@ -80,6 +86,19 @@ class ofApp : public ofBaseApp{
 		ofRectangle sceneRenderViewport;
 
 		float splitRatio = 0.2f;
+		std::array<char, 256> findQuery{};
+		std::array<char, 256> replaceQuery{};
+		std::vector<std::string> findHistory;
+		std::string lastFindQuery;
+		std::size_t findMatchOffset = std::string::npos;
+		std::size_t findMatchLength = 0;
+		bool findDialogOpen = false;
+		bool findOnlyMode = false;
+		bool findMatchCase = false;
+		bool findWholeWord = false;
+		bool findLoop = true;
+		bool findRegex = false;
+
 		bool showRapidToolpaths = true;
 		bool importInProgress = false;
 		bool viewCubeUsing = false;

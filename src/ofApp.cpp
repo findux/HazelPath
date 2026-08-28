@@ -587,6 +587,48 @@ void ofApp::pauseSimulation(){ simulation.pause(); }
 
 void ofApp::stopSimulation(){ simulation.stop(); }
 //--------------------------------------------------------------
+void ofApp::drawFindDialog(){
+	if (!findDialogOpen) return;
+
+	ImGui::SetNextWindowSize(ImVec2(430.0f, findOnlyMode ? 180.0f : 220.0f), ImGuiCond_FirstUseEver);
+	if (ImGui::Begin("Bul ve Degistir", &findDialogOpen, ImGuiWindowFlags_NoCollapse)) {
+		if (ImGui::Button(findOnlyMode ? "Bul ve Degistir" : "Sadece Bul")) {
+			findOnlyMode = !findOnlyMode;
+		}
+		ImGui::Separator();
+		ImGui::TextUnformatted("Bul:");
+		ImGui::SameLine(70.0f);
+		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::SetKeyboardFocusHere();
+		ImGui::InputText("##FindQuery", findQuery.data(), findQuery.size());
+		if (!findOnlyMode) {
+			ImGui::TextUnformatted("Degistir:");
+			ImGui::SameLine(70.0f);
+			ImGui::SetNextItemWidth(-1.0f);
+			ImGui::InputText("##ReplaceQuery", replaceQuery.data(), replaceQuery.size());
+		}
+		ImGui::Checkbox("Buyuk/Kucuk Harf", &findMatchCase);
+		ImGui::SameLine();
+		ImGui::Checkbox("Tam Kelime", &findWholeWord);
+		ImGui::SameLine();
+		ImGui::Checkbox("Dongusel", &findLoop);
+		ImGui::SameLine();
+		ImGui::Checkbox("Regex", &findRegex);
+		ImGui::Separator();
+		ImGui::Button("Bul Sonraki");
+		ImGui::SameLine();
+		ImGui::Button("Bul Onceki");
+		if (!findOnlyMode) {
+			ImGui::SameLine();
+			ImGui::Button("Degistir");
+			ImGui::SameLine();
+			ImGui::Button("Tumunu Degistir");
+		}
+	}
+	ImGui::End();
+}
+
+//--------------------------------------------------------------
 void ofApp::drawTextEditor(){
 	const ImGuiWindowFlags editorFlags =
 		ImGuiWindowFlags_HorizontalScrollbar |
@@ -1164,22 +1206,30 @@ void ofApp::draw(){
 	gui.begin();
 	ImGuizmo::BeginFrame();
 	drawInterface();
+	drawFindDialog();
 	gui.end();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	if (sceneStates.keyPressed(key)) {
+	const ImGuiIO& io = ImGui::GetIO();
+	const bool commandDown =
+		ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND) ||
+		io.KeyCtrl || io.KeySuper;
+	ofLogNotice("ofApp") << "Key pressed: " << key << " (commandDown=" << commandDown << ")";
+	if ((commandDown && (key == 'f' || key == 'F')) || key == 6) {
+		findDialogOpen = true;
 		return;
 	}
-	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
-		(key == 's' || key == 'S')) {
+	if ((commandDown && (key == 's' || key == 'S')) || key == 19) {
 		saveEditorText();
 		return;
 	}
-	if ((ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND)) &&
-		(key == 'o' || key == 'O')) {
+	if ((commandDown && (key == 'o' || key == 'O')) || key == 15) {
 		openEditorFile();
+		return;
+	}
+	if (sceneStates.keyPressed(key)) {
 		return;
 	}
 	if (key == OF_KEY_F5) playSimulation();
