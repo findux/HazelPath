@@ -12,6 +12,8 @@
 #include <chrono>
 #include <fstream>
 #include <limits>
+#include <regex>
+#include <cstring>
 #include <utility>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -226,8 +228,8 @@ void ofApp::setup(){
 	gcodeLanguage.mTokenRegexStrings.clear();
 	textEditor.SetLanguageDefinition(gcodeLanguage);
 	textEditor.SetImGuiChildIgnored(true);
-	//textEditor.SetText(initialNc);
-	//interpretEditorText();
+	textEditor.SetText(initialNc);
+	interpretEditorText();
 
 	
 	camera.enableMouseInput();
@@ -587,47 +589,130 @@ void ofApp::pauseSimulation(){ simulation.pause(); }
 
 void ofApp::stopSimulation(){ simulation.stop(); }
 //--------------------------------------------------------------
-void ofApp::drawFindDialog(){
-	if (!findDialogOpen) return;
-
-	ImGui::SetNextWindowSize(ImVec2(430.0f, findOnlyMode ? 180.0f : 220.0f), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Bul ve Degistir", &findDialogOpen, ImGuiWindowFlags_NoCollapse)) {
-		if (ImGui::Button(findOnlyMode ? "Bul ve Degistir" : "Sadece Bul")) {
-			findOnlyMode = !findOnlyMode;
-		}
-		ImGui::Separator();
-		ImGui::TextUnformatted("Bul:");
-		ImGui::SameLine(70.0f);
-		ImGui::SetNextItemWidth(-1.0f);
-		ImGui::SetKeyboardFocusHere();
-		ImGui::InputText("##FindQuery", findQuery.data(), findQuery.size());
-		if (!findOnlyMode) {
-			ImGui::TextUnformatted("Degistir:");
-			ImGui::SameLine(70.0f);
-			ImGui::SetNextItemWidth(-1.0f);
-			ImGui::InputText("##ReplaceQuery", replaceQuery.data(), replaceQuery.size());
-		}
-		ImGui::Checkbox("Buyuk/Kucuk Harf", &findMatchCase);
-		ImGui::SameLine();
-		ImGui::Checkbox("Tam Kelime", &findWholeWord);
-		ImGui::SameLine();
-		ImGui::Checkbox("Dongusel", &findLoop);
-		ImGui::SameLine();
-		ImGui::Checkbox("Regex", &findRegex);
-		ImGui::Separator();
-		ImGui::Button("Bul Sonraki");
-		ImGui::SameLine();
-		ImGui::Button("Bul Onceki");
-		if (!findOnlyMode) {
-			ImGui::SameLine();
-			ImGui::Button("Degistir");
-			ImGui::SameLine();
-			ImGui::Button("Tumunu Degistir");
-		}
-	}
-	ImGui::End();
+void ofApp::rememberFindQuery() {
+	const std::string query(findQuery.data());
+	if (query.empty()) return;
+	findHistory.erase(std::remove(findHistory.begin(), findHistory.end(), query), findHistory.end());
+	findHistory.insert(findHistory.begin(), query);
+	if (findHistory.size() > 20) findHistory.pop_back();
 }
 
+bool ofApp::findInEditor(bool forward) {
+	const std::string query(findQuery.data());
+	if (query.empty()) return false;
+	const std::string text = textEditor.GetText();
+	const auto cursor = textEditor.GetCursorPosition();
+	std::size_t cursorOffset = 0;
+	for (int line = 0; line < cursor.mLine; ++line) {
+		const std::size_t newline = text.find('\n', cursorOffset);
+		if (newline == std::string::npos) break;
+		cursorOffset = newline + 1;
+	}
+	cursorOffset += static_cast<std::size_t>(std::max(cursor.mColumn, 0));
+
+	std::vector<std::pair<std::size_t, std::size_t>> matches;
+	try {
+		if (findRegex) {
+			const auto flags = findMatchCase ? std::regex::ECMAScript : std::regex::icase;
+			const std::regex expression(query, flags);
+			for (std::sregex_iterator it(text.begin(), text.end(), expression), last; it != last; ++it) {
+				if (it->length() > 0) matches.emplace_back(static_cast<std::size_t>(it->position()), static_cast<std::size_t>(it->length()));
+			}
+		} else {
+			std::string haystack = text;
+			std::string needle = query;
+			if (!findMatchCase) {
+				std::transform(haystack.begin(), haystack.end(), haystack.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+				std::transform(needle.begin(), needle.end(), needle.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+			}
+			for (std::size_t offset = haystack.find(needle); offset != std::string::npos; offset = haystack.find(needle, offset + 1)) {
+				const bool leftWord = offset > 0 && std::isalnum(static_cast<unsigned char>(haystack[offset - 1]));
+				const std::size_t after = offset + needle.size();
+				const bool rightWord = after < haystack.size() && std::isalnum(static_cast<unsigned char>(haystack[after]));
+				if (!findWholeWord || (!leftWord && !rightWord)) matches.emplace_back(offset, needle.size());
+			}
+		}
+	} catch (const std::regex_error&) {
+		statusMessage = "Gecersiz regex";
+		return false;
+	}
+	if (matches.empty()) { statusMessage = "Eslesme bulunamadi"; return false; }
+
+	std::size_t chosen = std::string::npos;
+	if (forward) {
+		for (const auto& match : matches) if (match.first > cursorOffset || (match.first == cursorOffset && match.first != findMatchOffset)) { chosen = match.first; findMatchLength = match.second; break; }
+		if (chosen == std::string::npos && findLoop) { chosen = matches.front().first; findMatchLength = matches.front().second; }
+	} else {
+		for (auto it = matches.rbegin(); it != matches.rend(); ++it) if (it->first < cursorOffset) { chosen = it->first; findMatchLength = it->second; break; }
+		if (chosen == std::string::npos && findLoop) { chosen = matches.back().first; findMatchLength = matches.back().second; }
+	}
+	if (chosen == std::string::npos) { statusMessage = "Eslesme bulunamadi"; return false; }
+	findMatchOffset = chosen;
+	auto coordinateAt = [&text](std::size_t offset) {
+		int line = 0, column = 0;
+		for (std::size_t index = 0; index < offset && index < text.size(); ++index) { if (text[index] == '\n') { ++line; column = 0; } else ++column; }
+		return TextEditor::Coordinates(line, column);
+	};
+	textEditor.SetSelection(coordinateAt(chosen), coordinateAt(chosen + findMatchLength));
+	textEditor.SetCursorPosition(coordinateAt(chosen + findMatchLength));
+	rememberFindQuery();
+	statusMessage = "Eslesme secildi";
+	return true;
+}
+
+void ofApp::replaceCurrentFind() {
+	if (!textEditor.HasSelection() || textEditor.GetSelectedText().empty()) { findInEditor(true); return; }
+	textEditor.InsertText(replaceQuery.data());
+	editorDocumentDirty = true;
+	findInEditor(true);
+}
+
+void ofApp::replaceAllFind() {
+	const std::string query(findQuery.data());
+	if (query.empty()) return;
+	int replaced = 0;
+	const bool previousLoop = findLoop;
+	findLoop = false;
+	textEditor.MoveTop();
+	while (findInEditor(true)) { textEditor.InsertText(replaceQuery.data()); ++replaced; }
+	findLoop = previousLoop;
+	if (replaced > 0) editorDocumentDirty = true;
+	statusMessage = ofToString(replaced) + " yer degistirildi";
+}
+
+void ofApp::drawFindDialog(){
+	if (!findDialogOpen) return;
+	ImGui::SetNextWindowSize(ImVec2(500.0f, 0.0f), ImGuiCond_FirstUseEver);
+	const char* title = findOnlyMode ? "Bul###FR" : "Bul ve Degistir###FR";
+	if (!ImGui::Begin(title, &findDialogOpen, ImGuiWindowFlags_AlwaysAutoResize)) { ImGui::End(); return; }
+	if (ImGui::SmallButton(findOnlyMode ? "[ Bul ve Degistir ]" : "[ Sadece Bul ]")) findOnlyMode = !findOnlyMode;
+	ImGui::Separator();
+	constexpr float labelWidth = 80.0f;
+	ImGui::TextUnformatted("Bul:"); ImGui::SameLine(labelWidth); ImGui::SetNextItemWidth(270.0f);
+	if (ImGui::IsWindowAppearing()) ImGui::SetKeyboardFocusHere();
+	const bool enter = ImGui::InputText("##Find", findQuery.data(), findQuery.size(), ImGuiInputTextFlags_EnterReturnsTrue);
+	ImGui::SameLine();
+	if (findHistory.empty()) ImGui::BeginDisabled();
+	if (ImGui::SmallButton("v##fhist")) ImGui::OpenPopup("##FindHistory");
+	if (findHistory.empty()) ImGui::EndDisabled();
+	if (ImGui::BeginPopup("##FindHistory")) { for (const std::string& item : findHistory) if (ImGui::Selectable(item.c_str())) { std::snprintf(findQuery.data(), findQuery.size(), "%s", item.c_str()); ImGui::CloseCurrentPopup(); } ImGui::EndPopup(); }
+	ImGui::SameLine();
+	if (ImGui::SmallButton("x##clearFind")) { findQuery.fill('\0'); findMatchOffset = std::string::npos; }
+	if (!findOnlyMode) {
+		ImGui::TextUnformatted("Degistir:"); ImGui::SameLine(labelWidth); ImGui::SetNextItemWidth(300.0f);
+		ImGui::InputText("##Replace", replaceQuery.data(), replaceQuery.size()); ImGui::SameLine();
+		if (ImGui::SmallButton("x##clearReplace")) replaceQuery.fill('\0');
+	}
+	ImGui::Separator();
+	ImGui::Columns(2, "findOptions", false);
+	ImGui::Checkbox("Buyuk/Kucuk Harf", &findMatchCase); ImGui::Checkbox("Tam Kelime", &findWholeWord);
+	ImGui::NextColumn(); ImGui::Checkbox("Regex", &findRegex); ImGui::Checkbox("Dongusel", &findLoop); ImGui::Columns(1);
+	ImGui::Separator();
+	if (ImGui::Button("Bul Sonraki") || enter) findInEditor(true);
+	ImGui::SameLine(); if (ImGui::Button("Bul Onceki")) findInEditor(false);
+	if (!findOnlyMode) { ImGui::SameLine(); if (ImGui::Button("Degistir")) replaceCurrentFind(); ImGui::SameLine(); if (ImGui::Button("Tumunu Degistir")) replaceAllFind(); }
+	ImGui::End();
+}
 //--------------------------------------------------------------
 void ofApp::drawTextEditor(){
 	const ImGuiWindowFlags editorFlags =
@@ -1217,15 +1302,15 @@ void ofApp::keyPressed(int key){
 		ofGetKeyPressed(OF_KEY_CONTROL) || ofGetKeyPressed(OF_KEY_COMMAND) ||
 		io.KeyCtrl || io.KeySuper;
 	ofLogNotice("ofApp") << "Key pressed: " << key << " (commandDown=" << commandDown << ")";
-	if ((commandDown && (key == 'f' || key == 'F')) || key == 6) {
+	if (commandDown && (key == 'f' || key == 'F' || key == 6)) {
 		findDialogOpen = true;
 		return;
 	}
-	if ((commandDown && (key == 's' || key == 'S')) || key == 19) {
+	if (commandDown && (key == 's' || key == 'S' || key == 19)) {
 		saveEditorText();
 		return;
 	}
-	if ((commandDown && (key == 'o' || key == 'O')) || key == 15) {
+	if (commandDown && (key == 'o' || key == 'O' || key == 15)) {
 		openEditorFile();
 		return;
 	}
