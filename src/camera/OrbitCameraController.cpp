@@ -332,7 +332,7 @@ void OrbitCameraController::mouseDragged(ofMouseEventArgs& event) {
 		pan(delta);
 		break;
 	case Interaction::Dolly:
-		dolly(delta.y);
+		dollyAt(mouse, delta.y);
 		break;
 	default:
 		break;
@@ -347,7 +347,7 @@ void OrbitCameraController::mouseScrolled(ofMouseEventArgs& event) {
 	if (!mouseInputEnabled || !controlArea.inside(event.x, event.y)) {
 		return;
 	}
-	dolly(-event.scrollY * 10.0f);
+	dollyAt(glm::vec2(event.x, event.y), -event.scrollY * 10.0f);
 }
 
 void OrbitCameraController::orbit(const glm::vec2& delta) {
@@ -411,6 +411,21 @@ void OrbitCameraController::dolly(float delta) {
 	} else {
 		setDistance(getDistance() * scale);
 	}
+}
+
+void OrbitCameraController::dollyAt(const glm::vec2& cursor, float delta) {
+	const float targetDepth = worldToScreen(targetPoint, controlArea).z;
+	const glm::vec3 beforeZoom = screenToWorld(
+		glm::vec3(cursor, targetDepth),
+		controlArea);
+	dolly(delta);
+	const glm::vec3 afterZoom = screenToWorld(
+		glm::vec3(cursor, targetDepth),
+		controlArea);
+	const glm::vec3 adjustment = beforeZoom - afterZoom;
+	targetPoint += adjustment;
+	setGlobalPosition(getGlobalPosition() + adjustment);
+	updateOrientation();
 }
 
 void OrbitCameraController::updateOrientation() {

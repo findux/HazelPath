@@ -66,6 +66,7 @@ private:
 	void orbit(const glm::vec2& delta);
 	void pan(const glm::vec2& delta);
 	void dolly(float delta);
+	void dollyAt(const glm::vec2& cursor, float delta);
 	void updateOrientation();
 	glm::vec3 safeUpAxis() const;
 	glm::vec3 fallbackViewDirection() const;
