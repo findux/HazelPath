@@ -952,7 +952,7 @@ void ofApp::drawScene(int width, int height){
 	sceneStates.setCameraAnimating(viewCubeUsing);
 
 	const bool viewCubeCapturesMouse =
-		viewCubeUsing || viewCubeRect.inside(ofGetMouseX(), ofGetMouseY()) ||
+		findDialogOpen || viewCubeUsing || viewCubeRect.inside(ofGetMouseX(), ofGetMouseY()) ||
 		sceneStates.blocksCameraInput();
 	if (viewCubeCapturesMouse && camera.getMouseInputEnabled()) {
 		camera.disableMouseInput();
