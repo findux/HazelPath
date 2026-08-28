@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxEnTT.h"
 #include "ofxImGui.h"
 #include "ofxImGuiTextEditor.h"
 #include "ofxSol2.h"
@@ -61,6 +62,7 @@ class ofApp : public ofBaseApp{
 		nc::Toolpath currentToolpath;
 		nc::Machine currentMachine{"generic_3axis", "Generic 3-Axis Mill"};
 		nc::SimulationController simulation;
+		entt::registry ecsRegistry;
 		SceneStateManager sceneStates;
 		OrbitCameraController camera;
 		ofFbo sceneFbo;
