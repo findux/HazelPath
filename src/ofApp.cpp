@@ -1060,6 +1060,10 @@ void ofApp::drawInterface(){
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Duzen")) {
+			if (ImGui::MenuItem("Bul / Degistir", "Ctrl+F")) {
+				findDialogOpen = true;
+			}
+			ImGui::Separator();
 			ImGui::MenuItem("G-code metin editoru", nullptr, false, false);
 			ImGui::EndMenu();
 		}
@@ -1162,6 +1166,10 @@ void ofApp::drawInterface(){
 		fitCamera();
 	}
 	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Sahneyi kameraya sigdir");
+	ImGui::SameLine();
+	if (ImGui::Button("Bul", ImVec2(0.0f, 24.0f))) {
+		findDialogOpen = true;
+	}
 	ImGui::SameLine();
 	sceneStates.drawToolbar();
 	ImGui::Separator();
