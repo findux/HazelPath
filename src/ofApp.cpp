@@ -254,6 +254,7 @@ void ofApp::interpretEditorText(){
 
 	const std::string scriptPath = activeMachine().getImportScriptPath();
 	const std::string ncText = textEditor.GetText();
+	importProgress.store(0.0f);
 	importInProgress = true;
 	textEditor.SetReadOnly(true);
 	statusMessage = "NC yorumlaniyor...";
@@ -261,7 +262,7 @@ void ofApp::interpretEditorText(){
 	try {
 		importFuture = std::async(std::launch::async, [this, scriptPath, ncText]() {
 			return nc::importNcWithMachineScript(
-				scripting.state(), scriptPath, ncText);
+				scripting.state(), scriptPath, ncText, &importProgress);
 		});
 	} catch (const std::exception& error) {
 		importInProgress = false;
@@ -288,6 +289,7 @@ void ofApp::updateInterpretation(){
 	}
 
 	if (importResult.success) {
+		reinterpretationNeeded = false;
 		currentToolpath = std::move(importResult.toolpath);
 		sceneStates.notifyToolpathChanged();
 		rebuildToolpathEditorLines();
@@ -740,6 +742,7 @@ void ofApp::drawTextEditor(){
 	previousEditorCursorLine = editorCursorLine;
 	if (textEditor.IsTextChanged()) {
 		editorDocumentDirty = true;
+		reinterpretationNeeded = true;
 	}
 
 	if (simulation.getStatus() == nc::SimulationStatus::Playing &&
@@ -1123,13 +1126,15 @@ void ofApp::drawInterface(){
 	ImGui::TextUnformatted("G-code Editor");
 	ImGui::SameLine();
 	ImGui::BeginDisabled(importInProgress);
+	if (reinterpretationNeeded) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.65f, 0.16f, 0.16f, 1.0f));
+	if (reinterpretationNeeded) ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.82f, 0.22f, 0.22f, 1.0f));
 	if (ImGui::Button("Yeniden Yorumla")) {
 		interpretEditorText();
 	}
+	if (reinterpretationNeeded) ImGui::PopStyleColor(2);
 	ImGui::EndDisabled();
 	if (importInProgress) {
-		const float phase = std::fmod(ofGetElapsedTimef() * 0.8f, 2.0f);
-		const float progress = phase <= 1.0f ? phase : 2.0f - phase;
+		const float progress = ofClamp(importProgress.load(), 0.0f, 1.0f);
 		ImGui::ProgressBar(progress, ImVec2(-1.0f, 0.0f), "NC yorumlaniyor...");
 	}
 	ImGui::Separator();

@@ -100,6 +100,7 @@ function convert_nc(nc_text)
     path:set_current_position(current)
 
     for block_index = 0, program:num_blocks() - 1 do
+        if of_progress then of_progress(block_index + 1, program:num_blocks()) end
         local block = program:get_block(block_index)
         if not block:is_deleted() then
             local next_position = copy_position(current)

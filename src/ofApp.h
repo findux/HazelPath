@@ -13,6 +13,7 @@
 #include "states/SceneStateManager.h"
 
 #include <array>
+#include <atomic>
 #include <future>
 #include <memory>
 #include <vector>
@@ -100,7 +101,9 @@ class ofApp : public ofBaseApp{
 		bool findRegex = false;
 
 		bool showRapidToolpaths = true;
+		std::atomic<float> importProgress{0.0f};
 		bool importInProgress = false;
+		bool reinterpretationNeeded = false;
 		bool viewCubeUsing = false;
 		int editorSimulationLine = -1;
 		int previousEditorCursorLine = -1;

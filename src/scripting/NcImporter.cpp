@@ -8,8 +8,15 @@ NcImportResult importNcWithMachineScript(
 	sol::state& state,
 	const std::string& scriptPath,
 	const std::string& ncText,
+	std::atomic<float>* progress,
 	bool scriptPathRelativeToData) {
 	NcImportResult output;
+	if (progress) {
+		progress->store(0.0f);
+		state.set_function("of_progress", [progress](int current, int total) {
+			if (total > 0) progress->store(static_cast<float>(current) / total);
+		});
+	}
 	const std::string resolvedPath = scriptPathRelativeToData
 		? ofToDataPath(scriptPath, true)
 		: scriptPath;
@@ -48,6 +55,7 @@ NcImportResult importNcWithMachineScript(
 	}
 
 	output.toolpath = resultObject.as<Toolpath>();
+	if (progress) progress->store(1.0f);
 	output.success = true;
 	return output;
 }
