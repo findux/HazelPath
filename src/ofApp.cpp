@@ -202,10 +202,21 @@ void ofApp::setup(){
 
 	nc::MachineScriptFiles machineScripts;
 	machineScripts.directory = "machines/generic_3axis";
-	currentMachine.setScriptFiles(machineScripts);
-	currentMachine.addLink("x_axis");
-	currentMachine.addLink("y_axis", "x_axis");
-	currentMachine.addLink("z_axis", "y_axis");
+	const auto addGenericMachine = [this, &machineScripts](
+		const std::string& directory,
+		const std::string& id,
+		const std::string& name) {
+		auto machine = std::make_unique<nc::Machine>(id, name);
+		nc::MachineScriptFiles scripts = machineScripts;
+		scripts.directory = directory;
+		machine->setScriptFiles(scripts);
+		machine->addLink("x_axis");
+		machine->addLink("y_axis", "x_axis");
+		machine->addLink("z_axis", "y_axis");
+		machines.push_back(std::move(machine));
+	};
+	addGenericMachine("machines/generic_3axis", "generic_3axis", "Generic 3-Axis Mill");
+	addGenericMachine("machines/generic_3axis_copy", "generic_3axis_copy", "Generic 3-Axis Mill (Kopya)");
 	scripting.state().set_function("of_log", [](const std::string& message) {
 		ofLogNotice("Lua") << message;
 	});
@@ -225,12 +236,21 @@ void ofApp::setup(){
 }
 
 //--------------------------------------------------------------
+nc::Machine& ofApp::activeMachine() {
+	return *machines.at(activeMachineIndex);
+}
+
+const nc::Machine& ofApp::activeMachine() const {
+	return *machines.at(activeMachineIndex);
+}
+
+//--------------------------------------------------------------
 void ofApp::interpretEditorText(){
 	if (importInProgress) {
 		return;
 	}
 
-	const std::string scriptPath = currentMachine.getImportScriptPath();
+	const std::string scriptPath = activeMachine().getImportScriptPath();
 	const std::string ncText = textEditor.GetText();
 	importInProgress = true;
 	textEditor.SetReadOnly(true);
@@ -733,7 +753,7 @@ void ofApp::fitCamera() {
 		for (const glm::vec3& vertex : rapidToolpathMesh.getVertices()) includePoint(vertex);
 	}
 	for (const char* linkName : {"x_axis", "y_axis", "z_axis"}) {
-		if (const nc::MachineLink* link = currentMachine.findLink(linkName)) {
+		if (const nc::MachineLink* link = activeMachine().findLink(linkName)) {
 			const glm::vec3 position = link->getGlobalPosition();
 			includePoint(position - glm::vec3(15.0f));
 			includePoint(position + glm::vec3(15.0f));
@@ -784,13 +804,13 @@ void ofApp::update(){
 
 	const nc::AxisPosition& position = simulation.getPosition();
 	const float unitScale = currentToolpath.units == nc::Units::Inches ? 25.4f : 1.0f;
-	if (nc::MachineLink* xAxis = currentMachine.findLink("x_axis")) {
+	if (nc::MachineLink* xAxis = activeMachine().findLink("x_axis")) {
 		xAxis->setPosition(static_cast<float>(position.x) * unitScale, 0.0f, 0.0f);
 	}
-	if (nc::MachineLink* yAxis = currentMachine.findLink("y_axis")) {
+	if (nc::MachineLink* yAxis = activeMachine().findLink("y_axis")) {
 		yAxis->setPosition(0.0f, static_cast<float>(position.y) * unitScale, 0.0f);
 	}
-	if (nc::MachineLink* zAxis = currentMachine.findLink("z_axis")) {
+	if (nc::MachineLink* zAxis = activeMachine().findLink("z_axis")) {
 		zAxis->setPosition(0.0f, 0.0f, static_cast<float>(position.z) * unitScale);
 	}
 }
@@ -848,7 +868,7 @@ void ofApp::drawScene(int width, int height){
 	ofPopStyle();
 	ofSetColor(255, 140, 40);
 	//ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
-	currentMachine.drawLinks();
+	activeMachine().drawLinks();
 	sceneStates.drawWorld();
 	camera.end();
 
@@ -916,6 +936,22 @@ void ofApp::drawInterface(){
 			ImGui::MenuItem("G-code metin editoru", nullptr, false, false);
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Makine")) {
+			const std::string& selectedMachineName = activeMachine().getName();
+			if (ImGui::BeginCombo("Aktif makine", selectedMachineName.c_str())) {
+				for (std::size_t index = 0; index < machines.size(); ++index) {
+					const bool selected = index == activeMachineIndex;
+					if (ImGui::Selectable(machines[index]->getName().c_str(), selected)) {
+						activeMachineIndex = index;
+						statusMessage = "Aktif makine: " + machines[index]->getName();
+					}
+					if (selected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::BeginMenu("Gorunum")) {
 			if (ImGui::MenuItem("Kamerayi sifirla")) {
 				resetCamera();

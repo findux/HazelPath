@@ -13,6 +13,8 @@
 #include "states/SceneStateManager.h"
 
 #include <future>
+#include <memory>
+#include <vector>
 
 class ofApp : public ofBaseApp{
 
@@ -37,6 +39,8 @@ class ofApp : public ofBaseApp{
 		void resetCamera();
 		void fitCamera();
 		void updateWindowTitle();
+		nc::Machine& activeMachine();
+		const nc::Machine& activeMachine() const;
 		void interpretEditorText();
 		void updateInterpretation();
 		void rebuildToolpathMesh();
@@ -60,7 +64,8 @@ class ofApp : public ofBaseApp{
 		TextEditor textEditor;
 		ofxSol2 scripting;
 		nc::Toolpath currentToolpath;
-		nc::Machine currentMachine{"generic_3axis", "Generic 3-Axis Mill"};
+		std::vector<std::unique_ptr<nc::Machine>> machines;
+		std::size_t activeMachineIndex = 0;
 		nc::SimulationController simulation;
 		entt::registry ecsRegistry;
 		SceneStateManager sceneStates;
