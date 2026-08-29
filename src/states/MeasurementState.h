@@ -61,7 +61,6 @@ private:
 	void drawMotionHighlight(const SceneStateContext& context, std::size_t commandIndex) const;
 	void drawInfoPanel(const SceneStateContext& context, ImDrawList* drawList) const;
 	std::vector<std::string> infoLines(const SceneStateContext& context) const;
-	void ensureToolbarIcon();
 
 	std::vector<PathEndpoint> pathEndpoints;
 	std::vector<ScreenEndpoint> screenEndpoints;
@@ -80,9 +79,7 @@ private:
 	bool projectionValid = false;
 	bool hoverDirty = true;
 	bool exitRequested = false;
-	bool toolbarIconLoadAttempted = false;
 	bool mouseDraggedSincePress = false;
 	int pressedMouseButton = -1;
-	ofImage toolbarIcon;
 	float unitScale = 1.0f;
 };

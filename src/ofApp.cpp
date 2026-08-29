@@ -235,6 +235,21 @@ void ofApp::setup(){
 	camera.enableMouseInput();
 	camera.enableOrtho();
 	resetCamera();
+
+	ImFontConfig font_config;
+	font_config.OversampleH = 0;
+	font_config.OversampleV = 0;
+	font_config.PixelSnapH = true;
+	static const ImWchar kTurkishRanges[] = {
+		0x0020,
+		0x00FF,
+		0x0100,
+		0x017F,
+		0,
+	};
+
+	gui.addFont("c:\\Windows\\Fonts\\calibri.ttf", 16.0f, &font_config, kTurkishRanges, true);
+	gui.rebuildFontsTexture();
 }
 
 //--------------------------------------------------------------
@@ -679,15 +694,15 @@ void ofApp::replaceAllFind() {
 	while (findInEditor(true)) { textEditor.InsertText(replaceQuery.data()); ++replaced; }
 	findLoop = previousLoop;
 	if (replaced > 0) editorDocumentDirty = true;
-	statusMessage = ofToString(replaced) + " yer degistirildi";
+	statusMessage = ofToString(replaced) + " yer değiştirildi";
 }
 
 void ofApp::drawFindDialog(){
 	if (!findDialogOpen) return;
 	ImGui::SetNextWindowSize(ImVec2(500.0f, 0.0f), ImGuiCond_FirstUseEver);
-	const char* title = findOnlyMode ? "Bul###FR" : "Bul ve Degistir###FR";
+	const char* title = findOnlyMode ? "Bul###FR" : "Bul ve Değiştir###FR";
 	if (!ImGui::Begin(title, &findDialogOpen, ImGuiWindowFlags_AlwaysAutoResize)) { ImGui::End(); return; }
-	if (ImGui::SmallButton(findOnlyMode ? "[ Bul ve Degistir ]" : "[ Sadece Bul ]")) findOnlyMode = !findOnlyMode;
+	if (ImGui::SmallButton(findOnlyMode ? "[ Bul ve Değiştir ]" : "[ Sadece Bul ]")) findOnlyMode = !findOnlyMode;
 	ImGui::Separator();
 	constexpr float labelWidth = 80.0f;
 	ImGui::TextUnformatted("Bul:"); ImGui::SameLine(labelWidth); ImGui::SetNextItemWidth(270.0f);
@@ -701,18 +716,18 @@ void ofApp::drawFindDialog(){
 	ImGui::SameLine();
 	if (ImGui::SmallButton("x##clearFind")) { findQuery.fill('\0'); findMatchOffset = std::string::npos; }
 	if (!findOnlyMode) {
-		ImGui::TextUnformatted("Degistir:"); ImGui::SameLine(labelWidth); ImGui::SetNextItemWidth(300.0f);
+		ImGui::TextUnformatted("Değiştir:"); ImGui::SameLine(labelWidth); ImGui::SetNextItemWidth(300.0f);
 		ImGui::InputText("##Replace", replaceQuery.data(), replaceQuery.size()); ImGui::SameLine();
 		if (ImGui::SmallButton("x##clearReplace")) replaceQuery.fill('\0');
 	}
 	ImGui::Separator();
 	ImGui::Columns(2, "findOptions", false);
-	ImGui::Checkbox("Buyuk/Kucuk Harf", &findMatchCase); ImGui::Checkbox("Tam Kelime", &findWholeWord);
-	ImGui::NextColumn(); ImGui::Checkbox("Regex", &findRegex); ImGui::Checkbox("Dongusel", &findLoop); ImGui::Columns(1);
+	ImGui::Checkbox("Büyük/Küçük Harf", &findMatchCase); ImGui::Checkbox("Tam Kelime", &findWholeWord);
+	ImGui::NextColumn(); ImGui::Checkbox("Regex", &findRegex); ImGui::Checkbox("Döngüsel", &findLoop); ImGui::Columns(1);
 	ImGui::Separator();
 	if (ImGui::Button("Bul Sonraki") || enter) findInEditor(true);
-	ImGui::SameLine(); if (ImGui::Button("Bul Onceki")) findInEditor(false);
-	if (!findOnlyMode) { ImGui::SameLine(); if (ImGui::Button("Degistir")) replaceCurrentFind(); ImGui::SameLine(); if (ImGui::Button("Tumunu Degistir")) replaceAllFind(); }
+	ImGui::SameLine(); if (ImGui::Button("Bul Önceki")) findInEditor(false);
+	if (!findOnlyMode) { ImGui::SameLine(); if (ImGui::Button("Değiştir")) replaceCurrentFind(); ImGui::SameLine(); if (ImGui::Button("Tümünü Değiştir")) replaceAllFind(); }
 	ImGui::End();
 }
 //--------------------------------------------------------------
@@ -758,7 +773,7 @@ void ofApp::drawTextEditor(){
 bool ofApp::loadEditorFile(const std::string& path){
 	std::ifstream input(path, std::ios::binary);
 	if (!input.is_open()) {
-		statusMessage = "Dosya acilamadi: " + ofFilePath::getFileName(path);
+		statusMessage = "Dosya açılamadı: " + ofFilePath::getFileName(path);
 		return false;
 	}
 	const std::string text((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
@@ -766,19 +781,19 @@ bool ofApp::loadEditorFile(const std::string& path){
 	editorFilePath = path;
 	editorDocumentDirty = false;
 	previousEditorCursorLine = -1;
-	statusMessage = ofFilePath::getFileName(path) + " acildi";
+	statusMessage = ofFilePath::getFileName(path) + " açıldı";
 	interpretEditorText();
 	return true;
 }
 
 void ofApp::openEditorFile(){
-	ofFileDialogResult result = ofSystemLoadDialog("NC dosyasi ac", false, editorFilePath);
+	ofFileDialogResult result = ofSystemLoadDialog("NC dosyası aç", false, editorFilePath);
 	if (result.bSuccess) loadEditorFile(result.getPath());
 }
 
 bool ofApp::saveEditorText(){
 	if (editorFilePath.empty()) {
-		ofFileDialogResult result = ofSystemSaveDialog("program.nc", "NC dosyasini kaydet");
+		ofFileDialogResult result = ofSystemSaveDialog("program.nc", "NC dosyasını kaydet");
 		if (!result.bSuccess) return false;
 		editorFilePath = result.getPath();
 	}
@@ -890,7 +905,7 @@ void ofApp::fitCamera() {
 		}
 	}
 	if (!hasBounds) {
-		statusMessage = "Sahneye sigdirilacak nesne yok";
+		statusMessage = "Sahneye sığdırılacak nesne yok";
 		return;
 	}
 
@@ -911,12 +926,12 @@ void ofApp::fitCamera() {
 		camera.setTarget(center);
 		camera.setDistance(radius * margin / std::sin(limitingHalfFov));
 	}
-	statusMessage = "Sahne kameraya sigdirildi";
+	statusMessage = "Sahne kameraya sığdırıldı";
 }
 
 void ofApp::updateWindowTitle() {
 	const std::string documentName = editorFilePath.empty()
-		? "Adsiz"
+		? "Adsız"
 		: ofFilePath::getFileName(editorFilePath);
 	const std::string title = "HazelPath - " + documentName +
 		(editorDocumentDirty ? " *" : "");
@@ -1006,7 +1021,7 @@ void ofApp::drawScene(int width, int height){
 	const nc::AxisPosition& toolPosition = simulation.getPosition();
 	const std::string unitLabel = currentToolpath.units == nc::Units::Inches ? "in" : "mm";
 	const std::string coordinateText =
-		"Takim Ucu [" + unitLabel + "]\n" +
+		"Takım Ucu [" + unitLabel + "]\n" +
 		"X  " + ofToString(toolPosition.x, 3) + "\n" +
 		"Y  " + ofToString(toolPosition.y, 3) + "\n" +
 		"Z  " + ofToString(toolPosition.z, 3);
@@ -1049,25 +1064,25 @@ void ofApp::drawInterface(){
 				textEditor.SetText("");
 				editorFilePath.clear();
 				editorDocumentDirty = false;
-				statusMessage = "Yeni belge olusturuldu";
+				statusMessage = "Yeni belge oluşturuldu";
 			}
-			if (ImGui::MenuItem("Ac", "Ctrl+O")) {
+			if (ImGui::MenuItem("Aç", "Ctrl+O")) {
 				openEditorFile();
 			}
 			if (ImGui::MenuItem("Kaydet", "Ctrl+S")) {
 				saveEditorText();
 			}
-			if (ImGui::MenuItem("Cikis")) {
+			if (ImGui::MenuItem("Çıkış")) {
 				ofExit();
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Duzen")) {
-			if (ImGui::MenuItem("Bul / Degistir", "Ctrl+F")) {
+		if (ImGui::BeginMenu("Düzen")) {
+			if (ImGui::MenuItem("Bul / Değiştir", "Ctrl+F")) {
 				findDialogOpen = true;
 			}
 			ImGui::Separator();
-			ImGui::MenuItem("G-code metin editoru", nullptr, false, false);
+			ImGui::MenuItem("G-code metin editörü", nullptr, false, false);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Makine")) {
@@ -1086,19 +1101,19 @@ void ofApp::drawInterface(){
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Gorunum")) {
-			if (ImGui::MenuItem("Kamerayi sifirla")) {
+		if (ImGui::BeginMenu("Görünüm")) {
+			if (ImGui::MenuItem("Kamerayı sıfırla")) {
 				resetCamera();
 
-				statusMessage = "Kamera sifirlandi";
+				statusMessage = "Kamera sıfırlandı";
 			}
-			if (ImGui::MenuItem("Sahneyi kameraya sigdir")) {
+			if (ImGui::MenuItem("Sahneyi kameraya sığdır")) {
 				fitCamera();
 			}
-			if (ImGui::MenuItem("Rapid takim yollarini goster", nullptr, &showRapidToolpaths)) {
+			if (ImGui::MenuItem("Rapid takım yollarını göster", nullptr, &showRapidToolpaths)) {
 				statusMessage = showRapidToolpaths
-					? "Rapid takim yollari gosteriliyor"
-					: "Rapid takim yollari gizlendi";
+					? "Rapid takım yolları gösteriliyor"
+					: "Rapid takım yolları gizlendi";
 			}
 			ImGui::EndMenu();
 		}
@@ -1135,7 +1150,7 @@ void ofApp::drawInterface(){
 	ImGui::EndDisabled();
 	if (importInProgress) {
 		const float progress = ofClamp(importProgress.load(), 0.0f, 1.0f);
-		ImGui::ProgressBar(progress, ImVec2(-1.0f, 0.0f), "NC yorumlaniyor...");
+		ImGui::ProgressBar(progress, ImVec2(-1.0f, 0.0f), "NC yorumlanıyor...");
 	}
 	ImGui::Separator();
 	drawTextEditor();
@@ -1167,10 +1182,10 @@ void ofApp::drawInterface(){
 		}
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Sigdir", ImVec2(0.0f, 24.0f))) {
+	if (ImGui::Button("Sığdır", ImVec2(0.0f, 24.0f))) {
 		fitCamera();
 	}
-	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Sahneyi kameraya sigdir");
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Sahneyi kameraya sığdır");
 	ImGui::SameLine();
 	if (ImGui::Button("Bul", ImVec2(0.0f, 24.0f))) {
 		findDialogOpen = true;
@@ -1233,7 +1248,7 @@ void ofApp::drawInterface(){
 		stepSimulationLine(-1);
 	}
 	ImGui::PopButtonRepeat();
-	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Geri adim (Yukari Ok)");
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Geri adım (Yukarı Ok)");
 	ImGui::SameLine();
 	if (ImGui::Button("Oynat")) {
 		playSimulation();
@@ -1255,11 +1270,11 @@ void ofApp::drawInterface(){
 		stepSimulationLine(1);
 	}
 	ImGui::PopButtonRepeat();
-	if (ImGui::IsItemHovered()) ImGui::SetTooltip("Ileri adim (Asagi Ok)");
+	if (ImGui::IsItemHovered()) ImGui::SetTooltip("İleri adım (Aşağı Ok)");
 	ImGui::SameLine();
 	float speedSlider = simulationSliderFromSpeed(simulation.getSpeed());
 	ImGui::SetNextItemWidth(180.0f);
-	if (ImGui::SliderFloat("Hiz##SimulationSpeed", &speedSlider, -2.0f, 2.0f, "%.2f")) {
+	if (ImGui::SliderFloat("Hız##SimulationSpeed", &speedSlider, -2.0f, 2.0f, "%.2f")) {
 		const double speed = simulationSpeedFromSlider(speedSlider);
 		simulation.setSpeed(speed);
 		if (speed == 0.0) {
@@ -1277,15 +1292,15 @@ void ofApp::drawInterface(){
 
 	const nc::AxisPosition& simulatedPosition = simulation.getPosition();
 	const char* simulationText = "Durdu";
-	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = simulation.getSpeed() < 0.0 ? "Geri sariyor" : "Oynuyor";
-	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatildi";
-	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandi";
+	if (simulation.getStatus() == nc::SimulationStatus::Playing) simulationText = simulation.getSpeed() < 0.0 ? "Geri sarıyor" : "Oynuyor";
+	if (simulation.getStatus() == nc::SimulationStatus::Paused) simulationText = "Duraklatıldı";
+	if (simulation.getStatus() == nc::SimulationStatus::Finished) simulationText = "Tamamlandı";
 #ifdef _DEBUG
-	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
+	ImGui::Text("%s | Sim: %s | Satır: %d | X %.2f Y %.2f Z %.2f | FPS: %.1f",
 		statusMessage.c_str(), simulationText, editorSimulationLine + 1,
 		simulatedPosition.x, simulatedPosition.y, simulatedPosition.z, ofGetFrameRate());
 #else
-	ImGui::Text("%s | Sim: %s | Satir: %d | X %.2f Y %.2f Z %.2f",
+	ImGui::Text("%s | Sim: %s | Satır: %d | X %.2f Y %.2f Z %.2f",
 		statusMessage.c_str(), simulationText, editorSimulationLine + 1,
 		simulatedPosition.x, simulatedPosition.y, simulatedPosition.z);
 #endif

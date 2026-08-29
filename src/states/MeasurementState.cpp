@@ -147,58 +147,13 @@ const char* MeasurementState::id() const {
 	return "measurement";
 }
 
-bool MeasurementState::drawToolbarButton(bool active) {
-	ensureToolbarIcon();
-
-	const ImVec2 size(32.0f, 24.0f);
-	const bool clicked = ImGui::InvisibleButton("##Caliper", size);
-	const bool hovered = ImGui::IsItemHovered();
-	const ImVec2 minimum = ImGui::GetItemRectMin();
-	const ImVec2 maximum = ImGui::GetItemRectMax();
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	const ImU32 background = active
-		? IM_COL32(155, 195, 230, 255)
-		: (hovered ? IM_COL32(230, 234, 238, 255) : IM_COL32(205, 211, 217, 255));
-	drawList->AddRectFilled(minimum, maximum, background, 3.0f);
-	drawList->AddRect(minimum, maximum, ImGui::GetColorU32(ImGuiCol_Border), 3.0f);
-
-	if (toolbarIcon.isAllocated()) {
-		const float availableWidth = size.x - 6.0f;
-		const float availableHeight = size.y - 4.0f;
-		const float aspect = toolbarIcon.getWidth() / toolbarIcon.getHeight();
-		const float imageWidth = std::min(availableWidth, availableHeight * aspect);
-		const float imageHeight = imageWidth / aspect;
-		const ImVec2 imageMinimum(
-			minimum.x + (size.x - imageWidth) * 0.5f,
-			minimum.y + (size.y - imageHeight) * 0.5f);
-		const ImVec2 imageMaximum(imageMinimum.x + imageWidth, imageMinimum.y + imageHeight);
-		const ImTextureID textureId =
-			(ImTextureID)(uintptr_t)toolbarIcon.getTexture().getTextureData().textureID;
-		drawList->AddImage(textureId, imageMinimum, imageMaximum);
-	} else {
-		drawList->AddText(
-			ImVec2(minimum.x + 10.0f, minimum.y + 4.0f),
-			IM_COL32(20, 20, 20, 255),
-			"M");
-	}
-
-	if (hovered) {
-		ImGui::SetTooltip("Olcum araci");
+bool MeasurementState::drawToolbarButton(bool) {
+	const bool clicked = ImGui::Button("Ölçüm", ImVec2(0.0f, 24.0f));
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Ölçüm aracı");
 	}
 	return clicked;
 }
-
-void MeasurementState::ensureToolbarIcon() {
-	if (toolbarIconLoadAttempted) {
-		return;
-	}
-	toolbarIconLoadAttempted = true;
-	const std::string iconPath = ofToDataPath("kumpas.png", true);
-	if (!toolbarIcon.load(iconPath)) {
-		ofLogWarning("MeasurementState") << "Kumpas ikonu yuklenemedi: " << iconPath;
-	}
-}
-
 void MeasurementState::onEnter(const SceneStateContext& context) {
 	exitRequested = false;
 	hoverDirty = true;
@@ -635,16 +590,16 @@ std::vector<std::string> MeasurementState::infoLines(const SceneStateContext& co
 	const nc::ToolpathCommand& command =
 		context.toolpath->getCommandRef(motionPoint->commandIndex);
 	if (command.type == nc::MotionType::Rapid || command.type == nc::MotionType::Linear) {
-		lines.push_back(command.type == nc::MotionType::Rapid ? "Hareket: G0 Rapid" : "Hareket: G1 Dogrusal");
+		lines.push_back(command.type == nc::MotionType::Rapid ? "Hareket: G0 Rapid" : "Hareket: G1 Doğrusal");
 		lines.push_back("Uzunluk: " + ofToString(linearLength(command), 4) + " " + unit);
 	} else if (isArc(command)) {
 		lines.push_back(command.type == nc::MotionType::ArcClockwise ? "Hareket: G2 CW Yay" : "Hareket: G3 CCW Yay");
-		lines.push_back("Yay uzunlugu: " + ofToString(arcLength(command), 4) + " " + unit);
+		lines.push_back("Yay uzunluğu: " + ofToString(arcLength(command), 4) + " " + unit);
 		lines.push_back("Radius: " + ofToString(arcRadius(command), 4) + " " + unit);
 		lines.push_back("Merkez: " + positionText(command.center));
 	}
 	if (command.sourceLine >= 0) {
-		lines.push_back("NC satiri: " + ofToString(command.sourceLine + 1));
+		lines.push_back("NC satırı: " + ofToString(command.sourceLine + 1));
 	}
 	return lines;
 }
