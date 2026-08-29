@@ -144,7 +144,8 @@
 		<Link>
 			<IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
 			<GenerateDebugInformation>false</GenerateDebugInformation>
-			<SubSystem>Console</SubSystem>
+			<SubSystem>Windows</SubSystem>
+			<EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
 			<OptimizeReferences>true</OptimizeReferences>
 			<EnableCOMDATFolding>true</EnableCOMDATFolding>
 			<RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -157,7 +158,8 @@
 		<Link>
 			<IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
 			<GenerateDebugInformation>false</GenerateDebugInformation>
-			<SubSystem>Console</SubSystem>
+			<SubSystem>Windows</SubSystem>
+			<EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
 			<OptimizeReferences>true</OptimizeReferences>
 			<EnableCOMDATFolding>true</EnableCOMDATFolding>
 			<RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -170,7 +172,8 @@
 		<Link>
 			<IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
 			<GenerateDebugInformation>false</GenerateDebugInformation>
-			<SubSystem>Console</SubSystem>
+			<SubSystem>Windows</SubSystem>
+			<EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
 			<OptimizeReferences>true</OptimizeReferences>
 			<EnableCOMDATFolding>true</EnableCOMDATFolding>
 			<RandomizedBaseAddress>true</RandomizedBaseAddress>
