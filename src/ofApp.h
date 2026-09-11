@@ -8,6 +8,7 @@
 #include "scripting/LuaBindings.h"
 #include "scripting/NcImporter.h"
 #include "simulation/SimulationController.h"
+#include "simulation/ToolpathVisibility.h"
 #include "machine/Machine.h"
 #include "camera/OrbitCameraController.h"
 #include "states/SceneStateManager.h"
@@ -46,6 +47,7 @@ class ofApp : public ofBaseApp{
 		void interpretEditorText();
 		void updateInterpretation();
 		void rebuildToolpathMesh();
+		void drawToolpaths();
 		void rebuildToolpathEditorLines();
 		void syncEditorToSimulation();
 		void jumpSimulationToEditorLine(int editorLine);
@@ -80,6 +82,8 @@ class ofApp : public ofBaseApp{
 		ofFbo sceneFbo;
 		ofVboMesh cuttingToolpathMesh;
 		ofVboMesh rapidToolpathMesh;
+		std::vector<nc::ToolpathVertexBoundary> toolpathVertexBoundaries;
+		bool simulationViewActive = false;
 		std::vector<int> toolpathEditorLines;
 		std::future<nc::NcImportResult> importFuture;
 		ofRectangle viewCubeRect;

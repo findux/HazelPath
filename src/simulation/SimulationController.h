@@ -51,6 +51,7 @@ private:
 	double rapidFeedRate = 3000.0;
 	double defaultFeedRate = 1000.0;
 	std::vector<double> commandDurations;
+	std::vector<double> commandEndSeconds;
 };
 
 } // namespace nc

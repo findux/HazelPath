@@ -356,6 +356,9 @@
 		<ClInclude Include="src\simulation\MotionInterpolator.h">
 			<Filter>src\simulation</Filter>
 		</ClInclude>
+		<ClInclude Include="src\simulation\ToolpathVisibility.h">
+			<Filter>src\simulation</Filter>
+		</ClInclude>
 		<ClInclude Include="src\simulation\SimulationController.h">
 			<Filter>src\simulation</Filter>
 		</ClInclude>

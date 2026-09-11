@@ -319,6 +319,7 @@
 		<ClInclude Include="src\scripting\NcImporter.h" />
 		<ClInclude Include="src\simulation\MotionInterpolator.h" />
 		<ClInclude Include="src\simulation\SimulationController.h" />
+		<ClInclude Include="src\simulation\ToolpathVisibility.h" />
 		<ClInclude Include="src\toolpath\Toolpath.h" />
 		<ClInclude Include="..\..\..\addons\ofxGpr\src\gcode_program.h" />
 		<ClInclude Include="..\..\..\addons\ofxGpr\src\ofxGpr.h" />

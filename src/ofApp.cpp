@@ -313,11 +313,14 @@ void ofApp::updateInterpretation(){
 		rebuildToolpathMesh();
 		simulation.setToolpath(&currentToolpath);
 		simulation.play();
+		simulationViewActive = true;
 		editorSimulationLine = -1;
 		statusMessage = "NC yorumlandi: " + ofToString(currentToolpath.size()) + " takim yolu komutu";
 		ofLogNotice("NC Import") << statusMessage;
 	} else {
 		simulation.stop();
+		simulationViewActive = false;
+		toolpathVertexBoundaries.clear();
 		cuttingToolpathMesh.clear();
 		rapidToolpathMesh.clear();
 		toolpathEditorLines.clear();
@@ -588,6 +591,7 @@ void ofApp::stepSimulationLine(int direction){
 		targetCommand = lineStarts[lineIndex];
 	}
 
+	simulationViewActive = true;
 	simulation.seekToCommand(targetCommand, targetProgress);
 	editorSimulationLine = toolpathEditorLines[targetCommand];
 	if (editorSimulationLine >= 0) {
@@ -599,6 +603,7 @@ void ofApp::stepSimulationLine(int direction){
 }
 
 void ofApp::playSimulation(){
+	simulationViewActive = true;
 	const double speed = simulation.getSpeed();
 	simulation.setSpeed(speed == 0.0 ? 1.0 : std::abs(speed));
 	simulation.play();
@@ -606,7 +611,10 @@ void ofApp::playSimulation(){
 
 void ofApp::pauseSimulation(){ simulation.pause(); }
 
-void ofApp::stopSimulation(){ simulation.stop(); }
+void ofApp::stopSimulation(){
+	simulation.stop();
+	simulationViewActive = false;
+}
 //--------------------------------------------------------------
 void ofApp::rememberFindQuery() {
 	const std::string query(findQuery.data());
@@ -815,7 +823,44 @@ bool ofApp::saveEditorText(){
 }
 
 //--------------------------------------------------------------
+void ofApp::drawToolpaths(){
+	if (!simulationViewActive) {
+		if (showRapidToolpaths) rapidToolpathMesh.draw();
+		cuttingToolpathMesh.draw();
+		return;
+	}
+	if (toolpathVertexBoundaries.empty()) return;
+
+	const std::size_t index = std::min(
+		simulation.getCommandIndex(), toolpathVertexBoundaries.size() - 1);
+	const auto& begin = toolpathVertexBoundaries[index];
+	const auto& end = toolpathVertexBoundaries[
+		std::min(index + 1, toolpathVertexBoundaries.size() - 1)];
+	const double progress = simulation.getCommandProgress();
+	const auto drawRange = [&](const ofVboMesh& mesh, std::size_t stream) {
+		const auto range = nc::toolpathDrawRange(begin[stream], end[stream], progress);
+		if (range.completedVertices > 0) {
+			mesh.getVbo().draw(GL_LINES, 0, static_cast<int>(range.completedVertices));
+		}
+		if (range.partialProgress > 0.0 && range.completedVertices < end[stream]) {
+			const auto vertex = range.completedVertices;
+			const auto& start = mesh.getVertices()[vertex];
+			const auto& finish = mesh.getVertices()[vertex + 1];
+			ofPushStyle();
+			ofSetColor(mesh.getColors()[vertex]);
+			ofDrawLine(start, glm::mix(start, finish, static_cast<float>(range.partialProgress)));
+			ofPopStyle();
+		}
+	};
+	if (showRapidToolpaths) drawRange(rapidToolpathMesh, 1);
+	drawRange(cuttingToolpathMesh, 0);
+}
+
+//--------------------------------------------------------------
 void ofApp::rebuildToolpathMesh(){
+	toolpathVertexBoundaries.clear();
+	toolpathVertexBoundaries.reserve(currentToolpath.size() + 1);
+	toolpathVertexBoundaries.push_back({0, 0});
 	cuttingToolpathMesh.clear();
 	rapidToolpathMesh.clear();
 	cuttingToolpathMesh.setMode(OF_PRIMITIVE_LINES);
@@ -876,6 +921,8 @@ void ofApp::rebuildToolpathMesh(){
 				previous = current;
 			}
 		}
+		toolpathVertexBoundaries.push_back({
+			cuttingToolpathMesh.getNumVertices(), rapidToolpathMesh.getNumVertices()});
 	}
 }
 //--------------------------------------------------------------
@@ -1008,10 +1055,7 @@ void ofApp::drawScene(int width, int height){
 	ofPushStyle();
 	ofSetColor(255);
 	ofSetLineWidth(1.0f);
-	if (showRapidToolpaths) {
-		rapidToolpathMesh.draw();
-	}
-	cuttingToolpathMesh.draw();
+	drawToolpaths();
 	ofPopStyle();
 	ofSetColor(255, 140, 40);
 	activeMachine().drawLinks();
@@ -1291,6 +1335,7 @@ void ofApp::drawInterface(){
 	float speedSlider = simulationSliderFromSpeed(simulation.getSpeed());
 	ImGui::SetNextItemWidth(180.0f);
 	if (ImGui::SliderFloat("Hız##SimulationSpeed", &speedSlider, -2.0f, 2.0f, "%.2f")) {
+		simulationViewActive = true;
 		const double speed = simulationSpeedFromSlider(speedSlider);
 		simulation.setSpeed(speed);
 		if (speed == 0.0) {
@@ -1303,6 +1348,7 @@ void ofApp::drawInterface(){
 	float timelinePercent = static_cast<float>(simulation.getProgress() * 100.0);
 	ImGui::SetNextItemWidth(-1.0f);
 	if (ImGui::SliderFloat("##SimulationTimeline", &timelinePercent, 0.0f, 100.0f, "%.1f%%")) {
+		simulationViewActive = true;
 		simulation.seek(timelinePercent / 100.0f);
 	}
 
