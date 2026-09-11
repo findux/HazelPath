@@ -310,6 +310,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ClInclude Include="src\ofApp.h" />
+		<ClInclude Include="src\AppVersion.h" />
 		<ClInclude Include="..\..\..\addons\ofxEnTT\src\ofxEnTT.h" />
 		<ClInclude Include="src\machine\Machine.h" />
 		<ClInclude Include="src\states\MeasurementState.h" />

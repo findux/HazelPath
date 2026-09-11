@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include "AppVersion.h"
 
 #include "simulation/MotionInterpolator.h"
 #include "states/MeasurementState.h"
@@ -982,7 +983,7 @@ void ofApp::updateWindowTitle() {
 	const std::string documentName = editorFilePath.empty()
 		? "Adsız"
 		: ofFilePath::getFileName(editorFilePath);
-	const std::string title = "HazelPath - " + documentName +
+	const std::string title = "HazelPath " HAZELPATH_VERSION " - " + documentName +
 		(editorDocumentDirty ? " *" : "");
 	if (title != currentWindowTitle) {
 		currentWindowTitle = title;

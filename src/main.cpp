@@ -1,5 +1,6 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#include "AppVersion.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -39,7 +40,7 @@ int main(int argc, char* argv[]){
 	//Use ofGLFWWindowSettings for more options like multi-monitor fullscreen
 	ofGLWindowSettings settings;
 	settings.setSize(1024, 768);
-	settings.title = "HazelPath";
+	settings.title = "HazelPath " HAZELPATH_VERSION;
 	settings.windowMode = OF_WINDOW; //can also be OF_FULLSCREEN
 
 	auto window = ofCreateWindow(settings);

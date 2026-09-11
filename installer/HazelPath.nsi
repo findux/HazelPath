@@ -4,13 +4,15 @@ Unicode True
 !include "WordFunc.nsh"
 
 !define APP_NAME "HazelPath"
-!define APP_VERSION "1.0.1"
+; Read the same release version used in the application window title.
+!searchparse /file "..\src\AppVersion.h" '#define HAZELPATH_VERSION "' APP_VERSION '"'
 !define APP_PUBLISHER "HazelPath"
 !define APP_EXE "HazelPath.exe"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 
-Name "${APP_NAME}"
-OutFile "..\dist\HazelPath-Setup-x64.exe"
+Name "${APP_NAME} ${APP_VERSION}"
+!define /date APP_BUILD_DATE "%Y-%m-%d"
+OutFile "..\dist\HazelPath-Setup-${APP_VERSION}-${APP_BUILD_DATE}-x64.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\${APP_NAME}" "InstallDir"
 RequestExecutionLevel admin
@@ -18,7 +20,7 @@ SetCompressor /SOLID lzma
 ShowInstDetails show
 ShowUninstDetails show
 
-VIProductVersion "1.0.0.0"
+VIProductVersion "${APP_VERSION}.0"
 VIAddVersionKey "ProductName" "${APP_NAME}"
 VIAddVersionKey "CompanyName" "${APP_PUBLISHER}"
 VIAddVersionKey "LegalCopyright" "Copyright ${APP_PUBLISHER}"
