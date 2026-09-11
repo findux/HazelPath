@@ -183,16 +183,18 @@ void MeasurementState::drawWorld(const SceneStateContext& context) {
 	if (hoverPoint.valid && !context.cameraAnimating) {
 		drawMotionHighlight(context, hoverPoint.commandIndex);
 	}
+	ofEnableAlphaBlending();
+	ofSetLineWidth(2.0f);
 	if (firstPoint) {
-		ofSetColor(255, 215, 70);
-		ofDrawSphere(firstPoint->worldPoint, 4.0f);
+		ofSetColor(255, 215, 70, 128);
+		ofDrawSphere(firstPoint->worldPoint, 1.0f);
 	}
 	if (secondPoint) {
-		ofSetColor(80, 220, 255);
-		ofDrawSphere(secondPoint->worldPoint, 4.0f);
+		ofSetColor(80, 220, 255, 128);
+		ofDrawSphere(secondPoint->worldPoint, 1.0f);
 	}
 	if (firstPoint && secondPoint) {
-		ofSetColor(255, 235, 90);
+		ofSetColor(255, 235, 90, 128);
 		ofDrawLine(firstPoint->worldPoint, secondPoint->worldPoint);
 	}
 	ofPopStyle();
@@ -216,11 +218,11 @@ void MeasurementState::drawOverlay(const SceneStateContext& context) {
 	}
 	if (firstPoint) {
 		const glm::vec2 screen = screenPosition(context, firstPoint->worldPoint);
-		drawList->AddCircleFilled(ImVec2(screen.x, screen.y), 4.0f, IM_COL32(255, 215, 70, 255));
+		drawList->AddCircleFilled(ImVec2(screen.x, screen.y), 2.5f, IM_COL32(255, 215, 70, 128));
 	}
 	if (secondPoint) {
 		const glm::vec2 screen = screenPosition(context, secondPoint->worldPoint);
-		drawList->AddCircleFilled(ImVec2(screen.x, screen.y), 4.0f, IM_COL32(80, 220, 255, 255));
+		drawList->AddCircleFilled(ImVec2(screen.x, screen.y), 2.5f, IM_COL32(80, 220, 255, 128));
 	}
 	drawInfoPanel(context, drawList);
 }
