@@ -212,9 +212,6 @@ void ofApp::setup(){
 		nc::MachineScriptFiles scripts = machineScripts;
 		scripts.directory = directory;
 		machine->setScriptFiles(scripts);
-		machine->addLink("x_axis");
-		machine->addLink("y_axis", "x_axis");
-		machine->addLink("z_axis", "y_axis");
 		machines.push_back(std::move(machine));
 	};
 	addGenericMachine("machines/generic_3axis", "generic_3axis", "Generic 3-Axis Mill");
@@ -1017,8 +1014,22 @@ void ofApp::drawScene(int width, int height){
 	cuttingToolpathMesh.draw();
 	ofPopStyle();
 	ofSetColor(255, 140, 40);
-	//ofDrawBox(0.0f, 0.0f, 0.0f, 80.0f);
 	activeMachine().drawLinks();
+	const nc::AxisPosition& tip = simulation.getPosition();
+	const float unitScale = currentToolpath.units == nc::Units::Inches ? 25.4f : 1.0f;
+	ofPushStyle();
+	ofEnableAlphaBlending();
+	ofSetColor(255, 140, 40, 128);
+	ofFill();
+	ofPushMatrix();
+	ofTranslate(static_cast<float>(tip.x) * unitScale,
+		static_cast<float>(tip.y) * unitScale,
+		static_cast<float>(tip.z) * unitScale + 9.0f);
+	// The cone tip is at local -Y; rotate it toward -Z and keep it on the toolpath.
+	ofRotateXDeg(90.0f);
+	ofDrawCone(3.0f, 18.0f);
+	ofPopMatrix();
+	ofPopStyle();
 	sceneStates.drawWorld();
 	camera.end();
 
