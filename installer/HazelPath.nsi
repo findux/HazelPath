@@ -4,7 +4,7 @@ Unicode True
 !include "WordFunc.nsh"
 
 !define APP_NAME "HazelPath"
-!define APP_VERSION "1.0.0"
+!define APP_VERSION "1.0.1"
 !define APP_PUBLISHER "HazelPath"
 !define APP_EXE "HazelPath.exe"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"

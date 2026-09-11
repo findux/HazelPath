@@ -228,8 +228,13 @@ void ofApp::setup(){
 	gcodeLanguage.mTokenRegexStrings.clear();
 	textEditor.SetLanguageDefinition(gcodeLanguage);
 	textEditor.SetImGuiChildIgnored(true);
-	textEditor.SetText(initialNc);
-	interpretEditorText();
+
+	#ifdef _DEBUG
+		textEditor.SetText(initialNc);
+		interpretEditorText();
+	#endif
+
+
 
 	
 	camera.enableMouseInput();
