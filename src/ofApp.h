@@ -46,6 +46,8 @@ class ofApp : public ofBaseApp{
 		const nc::Machine& activeMachine() const;
 		void interpretEditorText();
 		void updateInterpretation();
+		void reportImportError(const std::string& message);
+		void drawImportErrorDialog();
 		void rebuildToolpathMesh();
 		void drawToolpaths();
 		void rebuildToolpathEditorLines();
@@ -107,6 +109,12 @@ class ofApp : public ofBaseApp{
 		bool showRapidToolpaths = true;
 		std::atomic<float> importProgress{0.0f};
 		bool importInProgress = false;
+        bool importErrorDialogOpen = false;
+        std::string importErrorReport;
+        std::string importSourceText;
+        std::string importSourceName;
+        std::string importMachineName;
+        int importErrorLine = -1;
 		bool reinterpretationNeeded = false;
 		bool viewCubeUsing = false;
 		int editorSimulationLine = -1;

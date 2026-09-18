@@ -272,6 +272,12 @@ void ofApp::interpretEditorText(){
 
 	const std::string scriptPath = activeMachine().getImportScriptPath();
 	const std::string ncText = textEditor.GetText();
+    importSourceText = ncText;
+    importSourceName = editorFilePath;
+    importMachineName = activeMachine().getName();
+    importErrorReport.clear();
+    importErrorLine = -1;
+    importErrorDialogOpen = false;
 	importProgress.store(0.0f);
 	importInProgress = true;
 	textEditor.SetReadOnly(true);
@@ -286,6 +292,7 @@ void ofApp::interpretEditorText(){
 		importInProgress = false;
 		textEditor.SetReadOnly(false);
 		statusMessage = "Yorumlama baslatilamadi: " + std::string(error.what());
+		reportImportError(statusMessage);
 		ofLogError("NC Import") << statusMessage;
 	}
 }
@@ -327,12 +334,73 @@ void ofApp::updateInterpretation(){
 		toolpathEditorLines.clear();
 		editorSimulationLine = -1;
 		statusMessage = importResult.error;
+		reportImportError(importResult.error);
 		ofLogError("NC Import") << importResult.error;
 	}
 	textEditor.SetReadOnly(false);
 	importInProgress = false;
 }
 //--------------------------------------------------------------
+void ofApp::reportImportError(const std::string& message) {
+    importErrorLine = -1;
+    // Only explicit NC annotations are accepted, never Lua's file.lua:123 prefix.
+    static const std::regex ncLinePattern(R"(;\s*satir\s+([0-9]+)\b)");
+    std::smatch match;
+    if (std::regex_search(message, match, ncLinePattern)) {
+        try {
+            const int line = std::stoi(match[1].str());
+            const auto lineCount = 1 + std::count(importSourceText.begin(), importSourceText.end(), '\n');
+            if (line > 0 && line <= lineCount) importErrorLine = line - 1;
+        } catch (const std::exception&) {
+            // An invalid annotation must not hide the original error.
+        }
+    }
+    importErrorReport = "Dosya: " + (importSourceName.empty() ? std::string("Kaydedilmemiş belge") : importSourceName) +
+        "\nMakine: " + importMachineName + "\n\n" +
+        (message.empty() ? "Yorumlayıcı hata ayrıntısı bildirmedi." : message);
+    importErrorDialogOpen = true;
+    statusMessage = "NC yorumlanamadı. Ayrıntılar: Hata raporu menüsü.";
+}
+
+void ofApp::drawImportErrorDialog() {
+    if (!importErrorDialogOpen) return;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowSize(ImVec2(std::min(720.0f, viewport->WorkSize.x),
+        std::min(420.0f, viewport->WorkSize.y)), ImGuiCond_Appearing);
+    if (ImGui::Begin("NC yorumlama hatası", &importErrorDialogOpen)) {
+        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.35f, 1.0f), "NC yorumlama tamamlanamadı");
+        ImGui::TextWrapped("Bu rapor son yorumlama denemesine aittir. Hatayı düzelttikten sonra yeniden yorumlayın.");
+        ImGui::Separator();
+        const bool sameDocument = !importInProgress && editorFilePath == importSourceName &&
+            textEditor.GetText() == importSourceText;
+        if (importErrorLine >= 0) {
+            ImGui::Text("NC satırı: %d", importErrorLine + 1);
+            ImGui::SameLine();
+            ImGui::BeginDisabled(!sameDocument);
+            if (ImGui::Button("Satıra git")) {
+                simulation.pause();
+                const TextEditor::Coordinates position(importErrorLine, 0);
+                textEditor.SetCursorPosition(position);
+                textEditor.SetSelection(position, position);
+                importErrorDialogOpen = false;
+            }
+            ImGui::EndDisabled();
+        } else {
+            ImGui::TextWrapped("Yorumlayıcı NC satır numarası bildirmedi. Ayrıntılardaki Lua satırları makine betiğine aittir.");
+        }
+        if (!sameDocument) ImGui::TextWrapped("Belge değişti; rapor önceki metne aittir.");
+        if (ImGui::Button("Raporu kopyala")) ImGui::SetClipboardText(importErrorReport.c_str());
+        ImGui::SameLine();
+        if (ImGui::Button("Kapat")) importErrorDialogOpen = false;
+        ImGui::Separator();
+        ImGui::BeginChild("##ImportErrorDetails", ImVec2(0, 0), true);
+        ImGui::PushTextWrapPos(0.0f);
+        ImGui::TextUnformatted(importErrorReport.c_str());
+        ImGui::PopTextWrapPos();
+        ImGui::EndChild();
+    }
+    ImGui::End();
+}
 void ofApp::rebuildToolpathEditorLines(){
 	toolpathEditorLines.assign(currentToolpath.size(), -1);
 	const std::vector<std::string> editorLines = textEditor.GetTextLines();
@@ -1120,6 +1188,9 @@ void ofApp::drawInterface(){
 	ImGui::PopStyleVar(3);
 
 	if (ImGui::BeginMenuBar()) {
+        if (ImGui::MenuItem("Hata raporu", nullptr, false, !importErrorReport.empty())) {
+            importErrorDialogOpen = true;
+        }
 		if (ImGui::BeginMenu("Dosya")) {
 			if (ImGui::MenuItem("Yeni")) {
 				textEditor.SetText("");
@@ -1383,6 +1454,7 @@ void ofApp::draw(){
 	ImGuizmo::BeginFrame();
 	drawInterface();
 	drawFindDialog();
+	drawImportErrorDialog();
 	gui.end();
 }
 
