@@ -66,67 +66,51 @@ bool drawZUpViewCube(OrbitCameraController& camera, const ofRectangle& rectangle
 }
 
 //editorde G kod satırlarını renklendirmek için
-bool tokenizeGCodeLine(
-	const char* begin,
-	const char* end,
-	const char*& tokenBegin,
-	const char*& tokenEnd,
-	TextEditor::PaletteIndex& color) {
-	if (begin == end) {
-		return false;
-	}
-
-	color = TextEditor::PaletteIndex::Punctuation; // White for ordinary lines.
-	bool insideParenthesisComment = false;
-	for (const char* cursor = begin; cursor < end; ++cursor) {
-		if (*cursor == ';' && !insideParenthesisComment) {
-			break;
-		}
-		if (*cursor == '(') {
-			insideParenthesisComment = true;
-			continue;
-		}
-		if (*cursor == ')') {
-			insideParenthesisComment = false;
-			continue;
-		}
-		if (insideParenthesisComment || std::toupper(static_cast<unsigned char>(*cursor)) != 'G') {
-			continue;
-		}
-		if (cursor > begin && std::isalpha(static_cast<unsigned char>(cursor[-1]))) {
-			continue;
-		}
-
-		const char* digit = cursor + 1;
-		if (digit >= end || !std::isdigit(static_cast<unsigned char>(*digit))) {
-			continue;
-		}
-
-		int code = 0;
-		while (digit < end && std::isdigit(static_cast<unsigned char>(*digit))) {
-			code = code * 10 + (*digit - '0');
-			++digit;
-		}
-
-		if (code == 0) {
-			color = TextEditor::PaletteIndex::String; // Red.
-			break;
-		}
-		if (code == 1) {
-			color = TextEditor::PaletteIndex::Number; // Light green.
-			break;
-		}
-		if (code == 2 || code == 3) {
-			color = TextEditor::PaletteIndex::Keyword; // Light blue.
-			break;
-		}
-	}
-
-	tokenBegin = begin;
-	tokenEnd = end;
-	return true;
+TextEditor::PaletteIndex colorizeGCodeLine(const char* begin, const char* end, int& motionMode) {
+    int commentDepth = 0;
+    bool programEnd = false;
+    for (const char* cursor = begin; cursor < end; ++cursor) {
+        if (*cursor == ';' && commentDepth == 0) break;
+        if (*cursor == '(') { ++commentDepth; continue; }
+        if (*cursor == ')' && commentDepth > 0) { --commentDepth; continue; }
+        if (commentDepth > 0) continue;
+        const int letter = std::toupper(static_cast<unsigned char>(*cursor));
+        if (letter != 'G' && letter != 'M') continue;
+        if (cursor > begin && std::isalpha(static_cast<unsigned char>(cursor[-1]))) continue;
+        const char* digit = cursor + 1;
+        while (digit < end && std::isspace(static_cast<unsigned char>(*digit))) ++digit;
+        if (digit == end || !std::isdigit(static_cast<unsigned char>(*digit))) continue;
+        int code = 0;
+        while (digit < end && std::isdigit(static_cast<unsigned char>(*digit))) {
+            code = std::min(10000, code * 10 + (*digit - '0'));
+            ++digit;
+        }
+        // G01.0 is G1; G1.1 must not be mistaken for G1.
+        bool integral = true;
+        if (digit < end && *digit == '.') {
+            ++digit;
+            while (digit < end && std::isdigit(static_cast<unsigned char>(*digit))) {
+                if (*digit != '0') integral = false;
+                ++digit;
+            }
+        }
+        if (integral) {
+            if (letter == 'G') {
+                if (code >= 0 && code <= 3) motionMode = code;
+                else if (code == 80) motionMode = -1;
+            } else if (code == 2 || code == 30) {
+                programEnd = true;
+            }
+        }
+        cursor = digit - 1;
+    }
+    auto color = TextEditor::PaletteIndex::Punctuation;
+    if (motionMode == 0) color = TextEditor::PaletteIndex::String;
+    else if (motionMode == 1) color = TextEditor::PaletteIndex::Number;
+    else if (motionMode == 2 || motionMode == 3) color = TextEditor::PaletteIndex::Keyword;
+    if (programEnd) motionMode = -1;
+    return color;
 }
-
 std::string compactGCode(std::string text) {
 	text.erase(std::remove_if(text.begin(), text.end(), [](unsigned char character) {
 		return std::isspace(character) != 0;
@@ -222,7 +206,8 @@ void ofApp::setup(){
 	});
 
 	TextEditor::LanguageDefinition gcodeLanguage = TextEditor::LanguageDefinition::GCode();
-	gcodeLanguage.mTokenize = &tokenizeGCodeLine;
+	gcodeLanguage.mTokenize = nullptr;
+	gcodeLanguage.mColorizeLine = &colorizeGCodeLine;
 	gcodeLanguage.mTokenRegexStrings.clear();
 	textEditor.SetLanguageDefinition(gcodeLanguage);
 	textEditor.SetImGuiChildIgnored(true);
