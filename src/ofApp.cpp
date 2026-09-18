@@ -884,6 +884,29 @@ void ofApp::drawToolpaths(){
 		return;
 	}
 	if (toolpathVertexBoundaries.empty()) return;
+	if (showSimulationToolpathPreview) {
+		// Draw the complete path underneath the opaque, progressively revealed path.
+		// Do not write depth: the preview must not hide the current path or tool tip.
+		GLboolean depthWriteEnabled = GL_TRUE;
+		glGetBooleanv(GL_DEPTH_WRITEMASK, &depthWriteEnabled);
+		glDepthMask(GL_FALSE);
+		ofPushStyle();
+		ofEnableAlphaBlending();
+		ofSetColor(180, 190, 210, 45);
+		const auto drawPreview = [](ofVboMesh& mesh) {
+			if (mesh.getNumVertices() == 0) return;
+			// Upload pending mesh changes before saving the VBO's color-array state.
+			mesh.getVbo();
+			const bool colorsEnabled = mesh.usingColors();
+			mesh.disableColors();
+			mesh.draw();
+			if (colorsEnabled) mesh.enableColors();
+		};
+		if (showRapidToolpaths) drawPreview(rapidToolpathMesh);
+		drawPreview(cuttingToolpathMesh);
+		ofPopStyle();
+		glDepthMask(depthWriteEnabled);
+	}
 
 	const std::size_t index = std::min(
 		simulation.getCommandIndex(), toolpathVertexBoundaries.size() - 1);
@@ -1226,6 +1249,11 @@ void ofApp::drawInterface(){
 			}
 			if (ImGui::MenuItem("Sahneyi kameraya sığdır")) {
 				fitCamera();
+			}
+			if (ImGui::MenuItem("Simülasyonda tüm takım yolunu silik göster", nullptr, &showSimulationToolpathPreview)) {
+				statusMessage = showSimulationToolpathPreview
+					? "Simülasyonda silik takım yolu önizlemesi açık"
+					: "Simülasyonda silik takım yolu önizlemesi kapalı";
 			}
 			if (ImGui::MenuItem("Rapid takım yollarını göster", nullptr, &showRapidToolpaths)) {
 				statusMessage = showRapidToolpaths

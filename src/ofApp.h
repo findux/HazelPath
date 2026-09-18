@@ -107,6 +107,7 @@ class ofApp : public ofBaseApp{
 		bool findRegex = false;
 
 		bool showRapidToolpaths = true;
+		bool showSimulationToolpathPreview = true;
 		std::atomic<float> importProgress{0.0f};
 		bool importInProgress = false;
         bool importErrorDialogOpen = false;
