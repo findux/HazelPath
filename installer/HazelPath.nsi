@@ -11,7 +11,9 @@ Unicode True
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 
 Name "${APP_NAME} ${APP_VERSION}"
+!ifndef APP_BUILD_DATE
 !define /date APP_BUILD_DATE "%Y-%m-%d"
+!endif
 OutFile "..\dist\HazelPath-Setup-${APP_VERSION}-${APP_BUILD_DATE}-x64.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\${APP_NAME}" "InstallDir"

@@ -1304,6 +1304,8 @@ void ofApp::drawInterface(){
 			ImGui::EndMenu();
 		}
 
+		ImGui::Text("Makine: %s", activeMachine().getName().c_str());
+
 		// debug
 		//static char str0[128] = "Hello, world!";
 		//ImGui::InputText("Position", str0, IM_ARRAYSIZE(str0));
