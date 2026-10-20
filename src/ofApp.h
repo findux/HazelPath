@@ -43,6 +43,8 @@ class ofApp : public ofBaseApp{
 		void fitCamera();
 		void updateWindowTitle();
 		void discoverMachines();
+		void restoreMachineSelection();
+		void saveMachineSelection() const;
 		nc::Machine& activeMachine();
 		const nc::Machine& activeMachine() const;
 		void interpretEditorText();

@@ -12,6 +12,8 @@
 #include <cmath>
 #include <chrono>
 #include <fstream>
+#include <filesystem>
+#include <cstdlib>
 #include <limits>
 #include <regex>
 #include <cstring>
@@ -20,6 +22,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace {
+
+std::filesystem::path machineSelectionPath() {
+#ifdef _WIN32
+    const wchar_t* localAppData = _wgetenv(L"LOCALAPPDATA");
+    if (localAppData && *localAppData) {
+        return std::filesystem::path(localAppData) / L"HazelPath" / L"selected_machine.txt";
+    }
+#endif
+    return std::filesystem::path(ofFilePath::getUserHomeDir()) / ".hazelpath" / "selected_machine.txt";
+}
 
 bool drawZUpViewCube(OrbitCameraController& camera, const ofRectangle& rectangle) {
 	const glm::mat4 cameraTransformWithoutScale =
@@ -193,6 +205,7 @@ void ofApp::setup(){
 		ofExit();
 		return;
 	}
+	restoreMachineSelection();
 	scripting.state().set_function("of_log", [](const std::string& message) {
 		ofLogNotice("Lua") << message;
 	});
@@ -281,6 +294,37 @@ void ofApp::discoverMachines() {
 		}
 	}
 }
+void ofApp::restoreMachineSelection() {
+    try {
+        std::ifstream settings(machineSelectionPath());
+        std::string machineId;
+        if (!std::getline(settings, machineId)) return;
+        for (std::size_t index = 0; index < machines.size(); ++index) {
+            if (machines[index]->getId() == machineId) {
+                activeMachineIndex = index;
+                return;
+            }
+        }
+    } catch (const std::exception& error) {
+        ofLogWarning("Settings") << "Machine selection could not be loaded: " << error.what();
+    }
+}
+
+void ofApp::saveMachineSelection() const {
+    try {
+        const auto path = machineSelectionPath();
+        std::filesystem::create_directories(path.parent_path());
+        std::ofstream settings(path, std::ios::binary | std::ios::trunc);
+        settings << activeMachine().getId() << '\n';
+        settings.flush();
+        if (!settings) {
+            ofLogWarning("Settings") << "Machine selection could not be saved";
+        }
+    } catch (const std::exception& error) {
+        ofLogWarning("Settings") << "Machine selection could not be saved: " << error.what();
+    }
+}
+
 nc::Machine& ofApp::activeMachine() {
 	return *machines.at(activeMachineIndex);
 }
@@ -1273,6 +1317,7 @@ void ofApp::drawInterface(){
 					const bool selected = index == activeMachineIndex;
 					if (ImGui::Selectable(machines[index]->getName().c_str(), selected)) {
 						activeMachineIndex = index;
+						saveMachineSelection();
 						statusMessage = "Aktif makine: " + machines[index]->getName();
 					}
 					if (selected) ImGui::SetItemDefaultFocus();
