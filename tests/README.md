@@ -19,3 +19,15 @@ Manual UI checks (not covered by the headless test):
 - Profile large-path rendering separately: the seek benchmark does not measure GPU frame rate.
 
 The vertex boundary cache is rebuilt with the static meshes and cleared on import failure. The cumulative time cache is rebuilt by setToolpath and feed-rate setters. Picking and camera fitting continue to use full geometry. Partial arcs follow the existing tessellated chords, so their endpoint can differ slightly from the analytically sampled cone position within the existing tessellation tolerance.
+
+PCNI importer checks run with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tests\run_pcni_import_tests.ps1
+```
+
+The runner builds a temporary Lua interpreter from the existing ofxLua sources
+using Visual Studio tools. The Lua test supplies a Toolpath contract double and
+checks LY reflection, PRF/ZI signs, G4/G5 centers and directions, retract/restart,
+feed units, section filtering, compact words, source N numbers, and invalid input.
+It does not launch the application or test the C++ Lua bindings.
