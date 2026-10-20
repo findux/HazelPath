@@ -187,20 +187,12 @@ void ofApp::setup(){
 	scripting.setup();
 	nc::lua::registerAllBindings(scripting.state());
 
-	nc::MachineScriptFiles machineScripts;
-	machineScripts.directory = "machines/generic_3axis";
-	const auto addGenericMachine = [this, &machineScripts](
-		const std::string& directory,
-		const std::string& id,
-		const std::string& name) {
-		auto machine = std::make_unique<nc::Machine>(id, name);
-		nc::MachineScriptFiles scripts = machineScripts;
-		scripts.directory = directory;
-		machine->setScriptFiles(scripts);
-		machines.push_back(std::move(machine));
-	};
-	addGenericMachine("machines/generic_3axis", "generic_3axis", "Generic 3-Axis Mill");
-	addGenericMachine("machines/generic_3axis_copy", "generic_3axis_copy", "Generic 3-Axis Mill (Kopya)");
+	discoverMachines();
+	if (machines.empty()) {
+		ofLogError("Machines") << "No valid machine profiles found in machines/";
+		ofExit();
+		return;
+	}
 	scripting.state().set_function("of_log", [](const std::string& message) {
 		ofLogNotice("Lua") << message;
 	});
@@ -241,6 +233,54 @@ void ofApp::setup(){
 }
 
 //--------------------------------------------------------------
+void ofApp::discoverMachines() {
+	ofDirectory directory("machines");
+	directory.listDir();
+	directory.sort();
+	for (const auto& folder : directory.getFiles()) {
+		if (!folder.isDirectory()) continue;
+		const std::string profileDirectory = "machines/" + folder.getFileName();
+		const bool loaded = std::any_of(machines.begin(), machines.end(),
+			[&profileDirectory](const std::unique_ptr<nc::Machine>& machine) {
+				return machine->getScriptFiles().directory == profileDirectory;
+			});
+		if (loaded || !ofFile::doesFileExist(profileDirectory + "/machine.lua")) continue;
+		try {
+			sol::state metadataState;
+			metadataState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
+			const sol::protected_function_result result = metadataState.safe_script_file(
+				ofToDataPath(profileDirectory + "/machine.lua", true), sol::script_pass_on_error);
+			if (!result.valid()) {
+				const sol::error error = result;
+				ofLogWarning("Machines") << profileDirectory << ": " << error.what();
+				continue;
+			}
+			if (result.get_type() != sol::type::table) {
+				ofLogWarning("Machines") << profileDirectory << ": machine.lua must return a table";
+				continue;
+			}
+			const sol::table metadata = result.get<sol::table>();
+			const std::string id = metadata.get_or("id", folder.getFileName());
+			const std::string name = metadata.get_or("name", folder.getFileName());
+			nc::MachineScriptFiles scripts;
+			scripts.directory = profileDirectory;
+			const sol::optional<sol::table> scriptMetadata = metadata["scripts"];
+			if (scriptMetadata) {
+				scripts.importer = scriptMetadata->get_or("importer", scripts.importer);
+				scripts.exporter = scriptMetadata->get_or("exporter", scripts.exporter);
+			}
+			if (!ofFile::doesFileExist(profileDirectory + "/" + scripts.importer)) {
+				ofLogWarning("Machines") << profileDirectory << ": importer script not found";
+				continue;
+			}
+			auto machine = std::make_unique<nc::Machine>(id, name);
+			machine->setScriptFiles(scripts);
+			machines.push_back(std::move(machine));
+		} catch (const std::exception& error) {
+			ofLogWarning("Machines") << profileDirectory << ": " << error.what();
+		}
+	}
+}
 nc::Machine& ofApp::activeMachine() {
 	return *machines.at(activeMachineIndex);
 }
@@ -1228,6 +1268,7 @@ void ofApp::drawInterface(){
 		if (ImGui::BeginMenu("Makine")) {
 			const std::string& selectedMachineName = activeMachine().getName();
 			if (ImGui::BeginCombo("Aktif makine", selectedMachineName.c_str())) {
+				discoverMachines();
 				for (std::size_t index = 0; index < machines.size(); ++index) {
 					const bool selected = index == activeMachineIndex;
 					if (ImGui::Selectable(machines[index]->getName().c_str(), selected)) {
