@@ -60,6 +60,9 @@ Section "HazelPath" SEC_MAIN
   File "runtime\vcruntime140.dll"
   File "runtime\vcruntime140_1.dll"
 
+  SetOutPath "$INSTDIR\licenses"
+  File "..\licenses\ofxGpr-MIT.txt"
+
   SetOutPath "$INSTDIR\data"
   File /r "..\bin\data\*.*"
 
@@ -87,6 +90,8 @@ Section "Uninstall"
   DeleteRegKey HKLM "${UNINSTALL_KEY}"
   DeleteRegKey HKLM "Software\${APP_NAME}"
   RMDir /r "$INSTDIR\data"
+  Delete "$INSTDIR\licenses\ofxGpr-MIT.txt"
+  RMDir "$INSTDIR\licenses"
   Delete "$INSTDIR\msvcp140.dll"
   Delete "$INSTDIR\vcruntime140.dll"
   Delete "$INSTDIR\vcruntime140_1.dll"

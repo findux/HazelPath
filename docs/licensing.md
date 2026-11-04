@@ -9,6 +9,22 @@ HazelPath is provided without warranty, as described in that license.
 
 ## Third-party components
 
+### GPR / ofxGpr
+
+HazelPath uses GPR by Dillon Huff through our openFrameworks addon, `ofxGpr`.
+The original GPR code is Copyright (c) 2017 Dillon Huff and is MIT licensed.
+The openFrameworks adaptation and original addon contributions by findux and
+HazelPath contributors are also MIT licensed, Copyright (c) 2026.
+This addon is a separate MIT-licensed component; HazelPath's application code
+remains GPL-3.0-or-later.
+
+The MIT permission and copyright notice must accompany copies or substantial
+portions of the component, including binary distributions. A copy is provided
+in [licenses/ofxGpr-MIT.txt](../licenses/ofxGpr-MIT.txt) and included by the
+installer. Upstream GPR: https://github.com/dillonhuff/gpr
+
+### Other dependencies
+
 Third-party components retain their own copyright notices and licenses; the
 HazelPath license does not relicense them. The build uses openFrameworks and
 the addons listed in `addons.make`, including their transitive dependencies.
