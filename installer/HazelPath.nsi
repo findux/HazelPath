@@ -44,6 +44,8 @@ Function .onInit
   ${EndIf}
 FunctionEnd
 
+Page license
+LicenseData "..\LICENSE"
 Page directory
 Page instfiles
 UninstPage uninstConfirm
@@ -53,6 +55,7 @@ Section "HazelPath" SEC_MAIN
   SetShellVarContext all
   SetOutPath "$INSTDIR"
   File "..\bin\HazelPath.exe"
+  File "..\LICENSE"
   File "runtime\msvcp140.dll"
   File "runtime\vcruntime140.dll"
   File "runtime\vcruntime140_1.dll"
@@ -88,6 +91,7 @@ Section "Uninstall"
   Delete "$INSTDIR\vcruntime140.dll"
   Delete "$INSTDIR\vcruntime140_1.dll"
   Delete "$INSTDIR\${APP_EXE}"
+  Delete "$INSTDIR\LICENSE"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"
 SectionEnd
