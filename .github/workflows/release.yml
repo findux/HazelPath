@@ -64,7 +64,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Source archive failed.' }
           Copy-Item scripts/release-dependencies.json release-output/
           "Commit: $env:GITHUB_SHA`nRunner: $env:ImageOS $env:ImageVersion`nRun: https://github.com/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID" | Set-Content release-output/BUILD-INFO.txt
-          Get-ChildItem release-output -File | Sort-Object Name | ForEach-Object {
+          Get-ChildItem release-output -File | Where-Object Name -ne 'SHA256SUMS.txt' | Sort-Object Name | ForEach-Object {
             "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
           } | Set-Content release-output/SHA256SUMS.txt
       - name: Upload verified packages
@@ -76,7 +76,7 @@ jobs:
           retention-days: 14
 
   draft-release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     permissions:

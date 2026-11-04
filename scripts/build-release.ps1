@@ -14,8 +14,15 @@ New-Item -ItemType Directory -Path $OutputDirectory | Out-Null
 & (Join-Path $projectRoot 'tests/run_simulation_visibility_tests.ps1')
 & (Join-Path $projectRoot 'tests/run_pcni_import_tests.ps1')
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+$vsInstallation = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 $msbuild = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
 if (-not $msbuild) { throw 'Visual Studio C++ MSBuild not found.' }
+# Ship the CRT matching the build tools, rather than old DLLs from a past release.
+$redistVersion = (Get-Content -Raw (Join-Path $vsInstallation 'VC/Auxiliary/Build/Microsoft.VCRedistVersion.default.txt')).Trim()
+$redistRoot = Join-Path $vsInstallation "VC/Redist/MSVC/$redistVersion/x64/Microsoft.VC143.CRT"
+foreach ($runtimeDll in @('msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll')) {
+    Copy-Item -LiteralPath (Join-Path $redistRoot $runtimeDll) -Destination (Join-Path $projectRoot "installer/runtime/$runtimeDll")
+}
 Push-Location $projectRoot
 try {
     & $msbuild NC_kod_duzeltici.sln /m:2 /t:Rebuild /p:Configuration=Release /p:Platform=x64 /verbosity:minimal /nologo

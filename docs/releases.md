@@ -50,3 +50,5 @@ change binary hashes; this pipeline does not promise bit-for-bit builds.
 
 NSIS includes the application GPL and collected dependency notices. Older
 installers tracked in `dist/` are never used by the workflow.
+The installer uses the x64 Visual C++ runtime from the build machine's selected
+Visual Studio installation, replacing the historical runtime copies for that build.
