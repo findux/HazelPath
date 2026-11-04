@@ -9,6 +9,9 @@ The project uses Visual Studio on Windows and must be placed under
 `addons.make`, then open `NC_kod_duzeltici.sln` and build the x64 configuration.
 Machine definitions and import/export scripts are in `bin/data/machines/`.
 
+Pinned addon sources are in `vendor/addons`. See [automated releases](docs/releases.md)
+for clean builds, version tags and the draft release workflow.
+
 ## License
 
 Copyright (C) 2026 findux and HazelPath contributors.

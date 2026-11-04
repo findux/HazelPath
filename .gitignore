@@ -22,3 +22,6 @@ bin/*.ilk
 # OS files
 .DS_Store
 Thumbs.db
+
+# Automated release output
+release-output/

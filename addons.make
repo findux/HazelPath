@@ -1,4 +1,5 @@
 ofxGpr
+ofxEnTT
 ofxImGui
 ofxImGuiTextEditor
 ofxImGuizmo

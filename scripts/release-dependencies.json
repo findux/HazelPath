@@ -1,0 +1,7 @@
+{
+  "openFrameworks": {
+    "version": "0.12.1",
+    "url": "https://github.com/openframeworks/openFrameworks/releases/download/0.12.1/of_v0.12.1_vs_64_release.zip",
+    "sha256": "059f5210dd86beaee9dd17cfe4afe9eb5929376412b9baffda68ccd5d0b4d8a8"
+  }
+}

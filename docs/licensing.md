@@ -29,6 +29,10 @@ Third-party components retain their own copyright notices and licenses; the
 HazelPath license does not relicense them. The build uses openFrameworks and
 the addons listed in `addons.make`, including their transitive dependencies.
 Consult their respective source distributions for license texts and notices.
+Pinned addon sources and their existing notices are included in `vendor/addons`.
+The automated release build collects dependency license documents into the
+installer's `licenses` directory and includes the addon sources in its source
+archive. See [automated releases](releases.md).
 
 The Microsoft Visual C++ runtime DLLs in `installer/runtime/` are Microsoft
 components, distributed under Microsoft's applicable redistribution terms;
